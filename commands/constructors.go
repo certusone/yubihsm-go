@@ -103,3 +103,11 @@ func CreatePutAsymmetricKeyCommand(keyID uint16, label []byte, domains uint16, c
 
 	return command, nil
 }
+
+func CreateCloseSessionCommand() (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeCloseSession,
+	}
+
+	return command, nil
+}

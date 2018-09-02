@@ -74,6 +74,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseSignDataEddsaResponse(payload)
 	case CommandTypePutAsymmetric:
 		return parsePutAsymmetricKeyResponse(payload)
+	case CommandTypeCloseSession:
+		return nil, nil
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:

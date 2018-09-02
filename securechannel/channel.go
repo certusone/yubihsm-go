@@ -10,6 +10,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"github.com/enceve/crypto/cmac"
+	"sync"
 )
 
 type (
@@ -21,6 +22,8 @@ type (
 		authKeySlot uint16
 		// keyChain holds the keys generated in the authentication ceremony
 		keyChain *KeyChain
+		// channelLock is used to lock encrypted communications to prevent race conditions
+		channelLock sync.Mutex
 
 		// ID is the ID of the session with the HSM
 		ID uint8
@@ -76,6 +79,8 @@ const (
 
 	MessageTypeCommand  MessageType = 0
 	MessageTypeResponse MessageType = 1
+
+	MaxMessagesPerSession = 10000
 )
 
 // NewSecureChannel initiates a new secure channel to communicate with an HSM using the given authKey
@@ -102,6 +107,12 @@ func NewSecureChannel(connector connector.Connector, authKeySlot uint16, passwor
 
 // Authenticate establishes an authenticated session with the HSM
 func (s *SecureChannel) Authenticate() error {
+	if s.SecurityLevel != SecurityLevelUnauthenticated {
+		return errors.New("the session is already authenticated")
+	}
+
+	s.channelLock.Lock()
+	defer s.channelLock.Unlock()
 
 	command, _ := commands.CreateCreateSessionCommand(s.authKeySlot, s.HostChallenge)
 	response, err := s.SendCommand(command)
@@ -144,7 +155,7 @@ func (s *SecureChannel) Authenticate() error {
 	if err != nil {
 		return err
 	}
-	_, err = s.SendMACCommand(authenticateCommand)
+	_, err = s.sendMACCommand(authenticateCommand)
 	if err != nil {
 		return err
 	}
@@ -155,27 +166,6 @@ func (s *SecureChannel) Authenticate() error {
 	s.SecurityLevel = SecurityLevelAuthenticated
 
 	return nil
-}
-
-// SendMACCommand sends a MAC authenticated command to the HSM and returns a parsed response
-func (s *SecureChannel) SendMACCommand(c *commands.CommandMessage) (commands.Response, error) {
-
-	// Set command sessionID to this session
-	c.SessionID = &s.ID
-
-	// Calculate MAC for the command
-	sum, err := s.calculateMAC(c, MessageTypeCommand)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update chain value
-	s.MACChainValue = sum
-
-	// Set command MAC to calculated mac
-	c.MAC = sum[:MACLength]
-
-	return s.SendCommand(c)
 }
 
 // SendCommand sends an unauthenticated command to the HSM and returns the parsed response
@@ -191,6 +181,17 @@ func (s *SecureChannel) SendCommand(c *commands.CommandMessage) (commands.Respon
 // SendEncryptedCommand sends an encrypted & authenticated command to the HSM
 // and returns the decrypted and parsed response.
 func (s *SecureChannel) SendEncryptedCommand(c *commands.CommandMessage) (commands.Response, error) {
+	if s.SecurityLevel != SecurityLevelAuthenticated {
+		return nil, errors.New("the session is not authenticated")
+	}
+
+	if s.Counter >= MaxMessagesPerSession {
+		return nil, errors.New("channel has reached its message limit; please recreate")
+	}
+
+	// Lock the encrypted channel
+	s.channelLock.Lock()
+	defer s.channelLock.Unlock()
 
 	// Create the cipher using the session encryption key
 	block, err := aes.NewCipher(s.keyChain.EncKey)
@@ -216,7 +217,7 @@ func (s *SecureChannel) SendEncryptedCommand(c *commands.CommandMessage) (comman
 	encrypter.CryptBlocks(encryptedCommand, pad(commandData))
 
 	// Send the wrapped command in a SessionMessage
-	resp, err := s.SendMACCommand(&commands.CommandMessage{
+	resp, err := s.sendMACCommand(&commands.CommandMessage{
 		CommandType: commands.CommandTypeSessionMessage,
 		Data:        encryptedCommand,
 	})
@@ -253,6 +254,41 @@ func (s *SecureChannel) SendEncryptedCommand(c *commands.CommandMessage) (comman
 
 	// Parse and return the wrapped response
 	return commands.ParseResponse(unpad(decryptedResponse))
+}
+
+func (s *SecureChannel) Close() error {
+	command, err := commands.CreateCloseSessionCommand()
+	if err != nil {
+		return err
+	}
+
+	_, err = s.SendEncryptedCommand(command)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// sendMACCommand sends a MAC authenticated command to the HSM and returns a parsed response
+func (s *SecureChannel) sendMACCommand(c *commands.CommandMessage) (commands.Response, error) {
+
+	// Set command sessionID to this session
+	c.SessionID = &s.ID
+
+	// Calculate MAC for the command
+	sum, err := s.calculateMAC(c, MessageTypeCommand)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update chain value
+	s.MACChainValue = sum
+
+	// Set command MAC to calculated mac
+	c.MAC = sum[:MACLength]
+
+	return s.SendCommand(c)
 }
 
 // calculateMAC calculates the authenticated MAC for a command or response.
