@@ -38,6 +38,12 @@ type (
 	SignDataEddsaResponse struct {
 		Signature []byte
 	}
+
+	GetPubKeyResponse struct {
+		Algorithm Algorithm
+		// KeyData can contain different formats depending on the algorithm according to the YubiHSM2 documentation.
+		KeyData []byte
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -76,6 +82,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parsePutAsymmetricKeyResponse(payload)
 	case CommandTypeCloseSession:
 		return nil, nil
+	case CommandTypeGetPubKey:
+		return parseGetPubKeyResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -148,6 +156,16 @@ func parsePutAsymmetricKeyResponse(payload []byte) (Response, error) {
 
 	return &PutAsymmetricKeyResponse{
 		KeyID: keyID,
+	}, nil
+}
+
+func parseGetPubKeyResponse(payload []byte) (Response, error) {
+	if len(payload) < 1 {
+		return nil, errors.New("invalid response payload length")
+	}
+	return &GetPubKeyResponse{
+		Algorithm: Algorithm(payload[0]),
+		KeyData:   payload[1:],
 	}, nil
 }
 

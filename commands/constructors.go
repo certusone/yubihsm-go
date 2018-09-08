@@ -111,3 +111,15 @@ func CreateCloseSessionCommand() (*CommandMessage, error) {
 
 	return command, nil
 }
+
+func CreateGetPubKeyCommand(keyID uint16) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeGetPubKey,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
