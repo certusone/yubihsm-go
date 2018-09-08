@@ -22,6 +22,8 @@ type (
 
 		creationWait sync.WaitGroup
 		destroyed    bool
+
+		Connected chan bool
 	}
 )
 
@@ -37,6 +39,7 @@ func NewSessionManager(connector connector.Connector, authKeyID uint16, password
 		password:  password,
 		poolSize:  poolSize,
 		destroyed: false,
+		Connected: make(chan bool, 1),
 	}
 
 	manager.household()
@@ -87,6 +90,10 @@ func (s *SessionManager) household() {
 				s.lock.Lock()
 				defer s.lock.Unlock()
 				s.sessions = append(s.sessions, newSession)
+				select {
+				case s.Connected <- true:
+				default:
+				}
 			}()
 		}
 	}()
