@@ -21,6 +21,7 @@ type (
 		poolSize uint
 
 		creationWait sync.WaitGroup
+		destroyed    bool
 	}
 )
 
@@ -35,6 +36,7 @@ func NewSessionManager(connector connector.Connector, authKeyID uint16, password
 		authKeyID: authKeyID,
 		password:  password,
 		poolSize:  poolSize,
+		destroyed: false,
 	}
 
 	manager.household()
@@ -93,6 +95,9 @@ func (s *SessionManager) household() {
 }
 
 func (s *SessionManager) GetSession() (*securechannel.SecureChannel, error) {
+	if s.destroyed {
+		return nil, errors.New("sessionmanager has already been destroyed")
+	}
 	if len(s.sessions) == 0 {
 		return nil, errors.New("no sessions available")
 	}
@@ -100,4 +105,13 @@ func (s *SessionManager) GetSession() (*securechannel.SecureChannel, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	return s.sessions[rand.Intn(len(s.sessions))], nil
+}
+
+func (s *SessionManager) Destroy() {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	for _, session := range s.sessions {
+		session.Close()
+	}
 }
