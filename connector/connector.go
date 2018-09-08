@@ -1,6 +1,6 @@
 package connector
 
-import "aiakos/commands"
+import "github.com/certusone/aiakos/commands"
 
 type (
 	Connector interface {

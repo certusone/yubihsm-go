@@ -1,9 +1,9 @@
 package connector
 
 import (
-	"aiakos/commands"
 	"bytes"
 	"fmt"
+	"github.com/certusone/aiakos/commands"
 	"io/ioutil"
 	"net/http"
 	"strings"

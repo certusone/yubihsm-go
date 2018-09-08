@@ -1,14 +1,14 @@
 package securechannel
 
 import (
-	"aiakos/commands"
-	"aiakos/connector"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/binary"
 	"errors"
+	"github.com/certusone/aiakos/commands"
+	"github.com/certusone/aiakos/connector"
 	"github.com/enceve/crypto/cmac"
 	"sync"
 )

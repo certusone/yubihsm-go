@@ -1,10 +1,10 @@
 package aiakos
 
 import (
-	"aiakos/connector"
-	"aiakos/securechannel"
 	"errors"
 	"fmt"
+	"github.com/certusone/aiakos/connector"
+	"github.com/certusone/aiakos/securechannel"
 	"math/rand"
 	"sync"
 	"time"
