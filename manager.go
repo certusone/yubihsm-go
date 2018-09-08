@@ -114,4 +114,5 @@ func (s *SessionManager) Destroy() {
 	for _, session := range s.sessions {
 		session.Close()
 	}
+	s.destroyed = true
 }
