@@ -44,6 +44,10 @@ type (
 		// KeyData can contain different formats depending on the algorithm according to the YubiHSM2 documentation.
 		KeyData []byte
 	}
+
+	EchoResponse struct {
+		Data []byte
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -84,6 +88,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return nil, nil
 	case CommandTypeGetPubKey:
 		return parseGetPubKeyResponse(payload)
+	case CommandTypeEcho:
+		return parseEchoResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -166,6 +172,12 @@ func parseGetPubKeyResponse(payload []byte) (Response, error) {
 	return &GetPubKeyResponse{
 		Algorithm: Algorithm(payload[0]),
 		KeyData:   payload[1:],
+	}, nil
+}
+
+func parseEchoResponse(payload []byte) (Response, error) {
+	return &EchoResponse{
+		Data: payload,
 	}, nil
 }
 

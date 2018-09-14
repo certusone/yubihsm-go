@@ -1,8 +1,10 @@
 package aiakos
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"github.com/certusone/aiakos/commands"
 	"github.com/certusone/aiakos/connector"
 	"github.com/certusone/aiakos/securechannel"
 	"math/rand"
@@ -27,6 +29,10 @@ type (
 	}
 )
 
+var (
+	echoPayload = []byte("keepalive")
+)
+
 func NewSessionManager(connector connector.Connector, authKeyID uint16, password string, poolSize uint) (*SessionManager, error) {
 	if poolSize > 16 {
 		return nil, errors.New("pool size exceeds session limit")
@@ -47,7 +53,7 @@ func NewSessionManager(connector connector.Connector, authKeyID uint16, password
 	go func() {
 		for {
 			manager.household()
-			time.Sleep(5 * time.Second)
+			time.Sleep(15 * time.Second)
 		}
 	}()
 
@@ -60,7 +66,20 @@ func (s *SessionManager) household() {
 		defer s.lock.Unlock()
 
 		for i, session := range s.sessions {
-			if session.Counter > securechannel.MaxMessagesPerSession*0.9 {
+			// Send echo command
+			command, _ := commands.CreateEchoCommand(echoPayload)
+			resp, err := session.SendEncryptedCommand(command)
+			if err == nil {
+				parsedResp, matched := resp.(*commands.EchoResponse)
+				if !matched {
+					err = errors.New("invalid response type")
+				}
+				if !bytes.Equal(parsedResp.Data, echoPayload) {
+					err = errors.New("echoed data is invalid")
+				}
+			}
+
+			if session.Counter > securechannel.MaxMessagesPerSession*0.9 || err != nil {
 				// Remove expired session
 				go session.Close()
 

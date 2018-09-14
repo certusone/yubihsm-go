@@ -123,3 +123,12 @@ func CreateGetPubKeyCommand(keyID uint16) (*CommandMessage, error) {
 
 	return command, nil
 }
+
+func CreateEchoCommand(data []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeEcho,
+		Data:        data,
+	}
+
+	return command, nil
+}
