@@ -213,6 +213,8 @@ func (e *Error) Error() string {
 		message = "ID illegal"
 	case ErrorCodeCommandUnexecuted:
 		message = "Command unexecuted"
+	default:
+		message = "unknown"
 	}
 
 	return fmt.Sprintf("card responded with error: %s", message)
