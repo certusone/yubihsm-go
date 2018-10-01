@@ -1,18 +1,19 @@
-package aiakos
+package yubihsm
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/certusone/aiakos/commands"
-	"github.com/certusone/aiakos/connector"
-	"github.com/certusone/aiakos/securechannel"
+	"github.com/certusone/yubihsm-go/commands"
+	"github.com/certusone/yubihsm-go/connector"
+	"github.com/certusone/yubihsm-go/securechannel"
 	"math/rand"
 	"sync"
 	"time"
 )
 
 type (
+	// SessionManager manages a pool of authenticated secure sessions with a YubiHSM2
 	SessionManager struct {
 		sessions  []*securechannel.SecureChannel
 		lock      sync.Mutex
@@ -25,6 +26,7 @@ type (
 		creationWait sync.WaitGroup
 		destroyed    bool
 
+		// Connected indicates whether a successful connection with the HSM is established
 		Connected chan bool
 	}
 )
@@ -33,6 +35,8 @@ var (
 	echoPayload = []byte("keepalive")
 )
 
+// NewSessionManager creates a new instance of the SessionManager with poolSize connections.
+// Wait on channel Connected with a timeout to wait for active connections to be ready.
 func NewSessionManager(connector connector.Connector, authKeyID uint16, password string, poolSize uint) (*SessionManager, error) {
 	if poolSize > 16 {
 		return nil, errors.New("pool size exceeds session limit")
@@ -120,6 +124,7 @@ func (s *SessionManager) household() {
 	s.creationWait.Wait()
 }
 
+// GetSession returns a secure authenticated session with the HSM from the pool on which commands can be executed
 func (s *SessionManager) GetSession() (*securechannel.SecureChannel, error) {
 	if s.destroyed {
 		return nil, errors.New("sessionmanager has already been destroyed")
@@ -133,6 +138,8 @@ func (s *SessionManager) GetSession() (*securechannel.SecureChannel, error) {
 	return s.sessions[rand.Intn(len(s.sessions))], nil
 }
 
+// Destroy closes all connections in the pool.
+// SessionManager instances can't be reused.
 func (s *SessionManager) Destroy() {
 	s.lock.Lock()
 	defer s.lock.Unlock()

@@ -3,34 +3,27 @@ package connector
 import (
 	"bytes"
 	"fmt"
-	"github.com/certusone/aiakos/commands"
+	"github.com/certusone/yubihsm-go/commands"
 	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
 type (
+	// HTTPConnector implements the HTTP based connection with the YubiHSM2 connector
 	HTTPConnector struct {
 		URL string
 	}
-
-	Status         string
-	StatusResponse struct {
-		Status  Status
-		Serial  string
-		Version string
-		Pid     string
-		Address string
-		Port    string
-	}
 )
 
+// NewHTTPConnector creates a new instance of HTTPConnector
 func NewHTTPConnector(url string) *HTTPConnector {
 	return &HTTPConnector{
 		URL: url,
 	}
 }
 
+// Request encodes and executes a command on the HSM and returns the binary response
 func (c *HTTPConnector) Request(command *commands.CommandMessage) ([]byte, error) {
 	requestData, err := command.Serialize()
 	if err != nil {
@@ -54,6 +47,7 @@ func (c *HTTPConnector) Request(command *commands.CommandMessage) ([]byte, error
 	return data, nil
 }
 
+// GetStatus requests the status of the HSM connector route /connector/status
 func (c *HTTPConnector) GetStatus() (*StatusResponse, error) {
 	res, err := http.DefaultClient.Get("http://" + c.URL + "/connector/status")
 	if err != nil {
