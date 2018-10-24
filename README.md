@@ -1,7 +1,8 @@
 # yubihsm-go
 Yubihsm-go is a minimal implementation of the securechannel and connector protocol of the YubiHSM2.
 
-It also implements a simple SessionManager which can pool connections.
+It also implements a simple SessionManager which keeps connections alive and swaps them if the maximum number of
+messages is depleted.
 
 Currently the following commands are implemented:
 
@@ -26,18 +27,6 @@ if err != nil {
 	panic(err)
 }
 
-select {
-case <-sm.Connected:
-	println("connected and authed")
-case <-time.After(5 * time.Second):
-	panic(errors.New("connection/authentication with the HSM timed out; look at aiakos logs for more info"))
-}
-
-session, err := sm.GetSession()
-if err != nil {
-	panic(err)
-}
-
 echoMessage := []byte("test")
 
 command, err := commands.CreateEchoCommand(echoMessage)
@@ -45,7 +34,7 @@ if err != nil {
 	panic(err)
 }
 
-resp, err := session.SendEncryptedCommand(command)
+resp, err := sm.SendEncryptedCommand(command)
 if err != nil {
 	panic(err)
 }
