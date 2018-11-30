@@ -1,6 +1,6 @@
 package connector
 
-import "github.com/certusone/yubihsm-go/commands"
+import "github.com/loomnetwork/yubihsm-go/commands"
 
 type (
 	// Connector implements a simple request interface with a YubiHSM2

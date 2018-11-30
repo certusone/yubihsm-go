@@ -7,10 +7,11 @@ import (
 	"crypto/rand"
 	"encoding/binary"
 	"errors"
-	"github.com/certusone/yubihsm-go/commands"
-	"github.com/certusone/yubihsm-go/connector"
-	"github.com/enceve/crypto/cmac"
 	"sync"
+
+	"github.com/enceve/crypto/cmac"
+	"github.com/loomnetwork/yubihsm-go/commands"
+	"github.com/loomnetwork/yubihsm-go/connector"
 )
 
 type (

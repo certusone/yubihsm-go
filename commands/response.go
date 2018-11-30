@@ -39,6 +39,10 @@ type (
 		Signature []byte
 	}
 
+	SignDataEcdsaResponse struct {
+		Signature []byte
+	}
+
 	GetPubKeyResponse struct {
 		Algorithm Algorithm
 		// KeyData can contain different formats depending on the algorithm according to the YubiHSM2 documentation.
