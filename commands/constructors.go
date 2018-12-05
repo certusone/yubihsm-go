@@ -138,6 +138,19 @@ func CreateGetPubKeyCommand(keyID uint16) (*CommandMessage, error) {
 	return command, nil
 }
 
+func CreateDeleteObjectCommand(objID uint16, objType uint8) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeDeleteObject,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	binary.Write(payload, binary.BigEndian, objType)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreateEchoCommand(data []byte) (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeEcho,

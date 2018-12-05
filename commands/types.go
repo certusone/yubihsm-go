@@ -146,4 +146,13 @@ const (
 	Domain14 uint16 = 0x2000
 	Domain15 uint16 = 0x4000
 	Domain16 uint16 = 0x8000
+
+	// object types
+	ObjectTypeOpaque            uint8 = 0x01
+	ObjectTypeAuthenticationKey uint8 = 0x02
+	ObjectTypeAsymmetricKey     uint8 = 0x03
+	ObjectTypeWrapKey           uint8 = 0x04
+	ObjectTypeHmacKey           uint8 = 0x05
+	ObjectTypeTemplate          uint8 = 0x06
+	ObjectTypeOtpAeadKey        uint8 = 0x07
 )
