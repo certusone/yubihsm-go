@@ -10,8 +10,8 @@ import (
 	"sync"
 
 	"github.com/enceve/crypto/cmac"
-	"github.com/loomnetwork/yubihsm-go/commands"
-	"github.com/loomnetwork/yubihsm-go/connector"
+	"github.com/certusone/yubihsm-go/commands"
+	"github.com/certusone/yubihsm-go/connector"
 )
 
 type (

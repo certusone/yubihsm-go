@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/loomnetwork/yubihsm-go/commands"
-	"github.com/loomnetwork/yubihsm-go/connector"
-	"github.com/loomnetwork/yubihsm-go/securechannel"
+	"github.com/certusone/yubihsm-go/commands"
+	"github.com/certusone/yubihsm-go/connector"
+	"github.com/certusone/yubihsm-go/securechannel"
 )
 
 type (
