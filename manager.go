@@ -71,7 +71,6 @@ func (s *SessionManager) pingRoutine() {
 			}
 		}
 
-		println("pinged")
 		s.keepAlive.Reset(pingInterval)
 	}
 }

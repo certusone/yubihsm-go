@@ -78,6 +78,7 @@ const (
 	ErrorCodeCommandUnexecuted ErrorCode = 0xff
 
 	// Algorithms
+	AlgorithmP256      Algorithm = 12
 	AlgorithmSecp256k1 Algorithm = 15
 	AlgorighmED25519   Algorithm = 46
 
@@ -155,4 +156,8 @@ const (
 	ObjectTypeHmacKey           uint8 = 0x05
 	ObjectTypeTemplate          uint8 = 0x06
 	ObjectTypeOtpAeadKey        uint8 = 0x07
+
+	// list objects params
+	ListObjectParamID   uint8 = 0x01
+	ListObjectParamType uint8 = 0x02
 )

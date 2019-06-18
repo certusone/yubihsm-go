@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"io"
 )
 
 func CreateCreateSessionCommand(keySetID uint16, hostChallenge []byte) (*CommandMessage, error) {
@@ -112,6 +113,51 @@ func CreatePutAsymmetricKeyCommand(keyID uint16, label []byte, domains uint16, c
 	if keyPart2 != nil {
 		payload.Write(keyPart2)
 	}
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+type ListCommandOption func(w io.Writer)
+
+func NewObjectTypeOption(objectType uint8) ListCommandOption {
+	return func(w io.Writer) {
+		binary.Write(w, binary.BigEndian, ListObjectParamType)
+		binary.Write(w, binary.BigEndian, objectType)
+	}
+}
+
+func NewIDOption(id uint16) ListCommandOption {
+	return func(w io.Writer) {
+		binary.Write(w, binary.BigEndian, ListObjectParamID)
+		binary.Write(w, binary.BigEndian, id)
+	}
+}
+
+func CreateListObjectsCommand(options ...ListCommandOption) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeListObjects,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	for _, opt := range options {
+		opt(payload)
+	}
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreateGetObjectInfoCommand(keyID uint16, objectType uint8) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeGetObjectInfo,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	binary.Write(payload, binary.BigEndian, objectType)
 
 	command.Data = payload.Bytes()
 

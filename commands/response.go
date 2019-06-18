@@ -35,6 +35,29 @@ type (
 		KeyID uint16
 	}
 
+	ObjectInfoResponse struct {
+		Capabilities         uint64
+		ObjectID             uint16
+		Length               uint16
+		Domains              uint16
+		Type                 uint8
+		Algorithm            Algorithm
+		Sequence             uint8
+		Origin               uint8
+		Label                [40]byte
+		DelegatedCapabilites uint64
+	}
+
+	Object struct {
+		ObjectID   uint16
+		ObjectType uint8
+		Sequence   uint8
+	}
+
+	ListObjectsResponse struct {
+		Objects []Object
+	}
+
 	SignDataEddsaResponse struct {
 		Signature []byte
 	}
@@ -90,6 +113,10 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseSignDataEcdsaResponse(payload)
 	case CommandTypePutAsymmetric:
 		return parsePutAsymmetricKeyResponse(payload)
+	case CommandTypeListObjects:
+		return parseListObjectsResponse(payload)
+	case CommandTypeGetObjectInfo:
+		return parseGetObjectInfoResponse(payload)
 	case CommandTypeCloseSession:
 		return nil, nil
 	case CommandTypeGetPubKey:
@@ -177,6 +204,34 @@ func parsePutAsymmetricKeyResponse(payload []byte) (Response, error) {
 	return &PutAsymmetricKeyResponse{
 		KeyID: keyID,
 	}, nil
+}
+
+func parseListObjectsResponse(payload []byte) (Response, error) {
+	if len(payload)%4 != 0 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	response := ListObjectsResponse{
+		Objects: make([]Object, len(payload)/4),
+	}
+
+	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &response.Objects)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
+}
+
+func parseGetObjectInfoResponse(payload []byte) (Response, error) {
+	response := ObjectInfoResponse{}
+
+	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &response)
+	if err != nil {
+		return nil, err
+	}
+
+	return &response, nil
 }
 
 func parseGetPubKeyResponse(payload []byte) (Response, error) {
