@@ -3,11 +3,12 @@ package yubihsm
 import (
 	"bytes"
 	"errors"
+	"sync"
+	"time"
+
 	"github.com/certusone/yubihsm-go/commands"
 	"github.com/certusone/yubihsm-go/connector"
 	"github.com/certusone/yubihsm-go/securechannel"
-	"sync"
-	"time"
 )
 
 type (
@@ -70,7 +71,6 @@ func (s *SessionManager) pingRoutine() {
 			}
 		}
 
-		println("pinged")
 		s.keepAlive.Reset(pingInterval)
 	}
 }

@@ -3,10 +3,11 @@ package connector
 import (
 	"bytes"
 	"fmt"
-	"github.com/certusone/yubihsm-go/commands"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/certusone/yubihsm-go/commands"
 )
 
 type (

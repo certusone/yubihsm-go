@@ -78,7 +78,9 @@ const (
 	ErrorCodeCommandUnexecuted ErrorCode = 0xff
 
 	// Algorithms
-	AlgorighmED25519 Algorithm = 46
+	AlgorithmP256      Algorithm = 12
+	AlgorithmSecp256k1 Algorithm = 15
+	AlgorighmED25519   Algorithm = 46
 
 	// Capabilities
 	CapabilityGetOpaque             uint64 = 0x0000000000000001
@@ -145,4 +147,17 @@ const (
 	Domain14 uint16 = 0x2000
 	Domain15 uint16 = 0x4000
 	Domain16 uint16 = 0x8000
+
+	// object types
+	ObjectTypeOpaque            uint8 = 0x01
+	ObjectTypeAuthenticationKey uint8 = 0x02
+	ObjectTypeAsymmetricKey     uint8 = 0x03
+	ObjectTypeWrapKey           uint8 = 0x04
+	ObjectTypeHmacKey           uint8 = 0x05
+	ObjectTypeTemplate          uint8 = 0x06
+	ObjectTypeOtpAeadKey        uint8 = 0x07
+
+	// list objects params
+	ListObjectParamID   uint8 = 0x01
+	ListObjectParamType uint8 = 0x02
 )

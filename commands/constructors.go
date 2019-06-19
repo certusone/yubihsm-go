@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"io"
 )
 
 func CreateCreateSessionCommand(keySetID uint16, hostChallenge []byte) (*CommandMessage, error) {
@@ -77,6 +78,20 @@ func CreateSignDataEddsaCommand(keyID uint16, data []byte) (*CommandMessage, err
 	return command, nil
 }
 
+func CreateSignDataEcdsaCommand(keyID uint16, data []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeSignDataEcdsa,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	payload.Write(data)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreatePutAsymmetricKeyCommand(keyID uint16, label []byte, domains uint16, capabilities uint64, algorithm Algorithm, keyPart1 []byte, keyPart2 []byte) (*CommandMessage, error) {
 	if len(label) > LabelLength {
 		return nil, errors.New("label is too long")
@@ -104,6 +119,51 @@ func CreatePutAsymmetricKeyCommand(keyID uint16, label []byte, domains uint16, c
 	return command, nil
 }
 
+type ListCommandOption func(w io.Writer)
+
+func NewObjectTypeOption(objectType uint8) ListCommandOption {
+	return func(w io.Writer) {
+		binary.Write(w, binary.BigEndian, ListObjectParamType)
+		binary.Write(w, binary.BigEndian, objectType)
+	}
+}
+
+func NewIDOption(id uint16) ListCommandOption {
+	return func(w io.Writer) {
+		binary.Write(w, binary.BigEndian, ListObjectParamID)
+		binary.Write(w, binary.BigEndian, id)
+	}
+}
+
+func CreateListObjectsCommand(options ...ListCommandOption) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeListObjects,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	for _, opt := range options {
+		opt(payload)
+	}
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreateGetObjectInfoCommand(keyID uint16, objectType uint8) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeGetObjectInfo,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	binary.Write(payload, binary.BigEndian, objectType)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreateCloseSessionCommand() (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeCloseSession,
@@ -119,6 +179,19 @@ func CreateGetPubKeyCommand(keyID uint16) (*CommandMessage, error) {
 
 	payload := bytes.NewBuffer([]byte{})
 	binary.Write(payload, binary.BigEndian, keyID)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreateDeleteObjectCommand(objID uint16, objType uint8) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeDeleteObject,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	binary.Write(payload, binary.BigEndian, objType)
 	command.Data = payload.Bytes()
 
 	return command, nil
