@@ -132,9 +132,6 @@ func (s *SessionManager) SendEncryptedCommand(c *commands.CommandMessage) (comma
 		return nil, errors.New("no session available")
 	}
 
-	// Reset keepalive since we are resetting the timeout by sending a command
-	s.keepAlive.Reset(pingInterval)
-
 	return s.session.SendEncryptedCommand(c)
 }
 
