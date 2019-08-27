@@ -205,3 +205,16 @@ func CreateEchoCommand(data []byte) (*CommandMessage, error) {
 
 	return command, nil
 }
+
+func CreateDeriveEcdhCommand(objID uint16, pubkey []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeDeriveEcdh,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	payload.Write(pubkey)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}

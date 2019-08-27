@@ -11,9 +11,10 @@ Currently the following commands are implemented:
  * SignDataEddsa
  * PutAsymmetricKey
  * GetPubKey
+ * DeriveEcdh
  * Echo
  * Authentication & Session related commands
- 
+
 Implementing new commands is really easy. Please consult `commands/constructors.go` and `commands/response.go` for reference.
 
 Please submit a PR if you have implemented new commands or extended existing constructors.
