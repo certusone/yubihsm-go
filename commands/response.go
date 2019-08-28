@@ -75,6 +75,10 @@ type (
 	EchoResponse struct {
 		Data []byte
 	}
+
+	DeriveEcdhResponse struct {
+		XCoordinate []byte
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -125,6 +129,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return nil, nil
 	case CommandTypeEcho:
 		return parseEchoResponse(payload)
+	case CommandTypeDeriveEcdh:
+		return parseDeriveEcdhResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -247,6 +253,12 @@ func parseGetPubKeyResponse(payload []byte) (Response, error) {
 func parseEchoResponse(payload []byte) (Response, error) {
 	return &EchoResponse{
 		Data: payload,
+	}, nil
+}
+
+func parseDeriveEcdhResponse(payload []byte) (Response, error) {
+	return &DeriveEcdhResponse{
+		XCoordinate: payload,
 	}, nil
 }
 

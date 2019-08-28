@@ -42,7 +42,8 @@ const (
 	CommandTypeGetPubKey             CommandType = 0x54
 	CommandTypeSignDataPss           CommandType = 0x55
 	CommandTypeSignDataEcdsa         CommandType = 0x56
-	CommandTypeDecryptEcdh           CommandType = 0x57
+	CommandTypeDecryptEcdh           CommandType = 0x57 // here for backwards compatibility
+	CommandTypeDeriveEcdh            CommandType = 0x57
 	CommandTypeDeleteObject          CommandType = 0x58
 	CommandTypeDecryptOaep           CommandType = 0x59
 	CommandTypeGenerateHMACKey       CommandType = 0x5a
@@ -94,7 +95,8 @@ const (
 	CapabilityAsymmetricSignEddsa   uint64 = 0x0000000000000100
 	CapabilityAsymmetricDecryptPkcs uint64 = 0x0000000000000200
 	CapabilityAsymmetricDecryptOaep uint64 = 0x0000000000000400
-	CapabilityAsymmetricDecryptEcdh uint64 = 0x0000000000000800
+	CapabilityAsymmetricDecryptEcdh uint64 = 0x0000000000000800 // here for backwards compatibility
+	CapabilityAsymmetricDeriveEcdh  uint64 = 0x0000000000000800
 	CapabilityExportWrapped         uint64 = 0x0000000000001000
 	CapabilityImportWrapped         uint64 = 0x0000000000002000
 	CapabilityPutWrapKey            uint64 = 0x0000000000004000
