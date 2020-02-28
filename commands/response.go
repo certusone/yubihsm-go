@@ -79,6 +79,10 @@ type (
 	DeriveEcdhResponse struct {
 		XCoordinate []byte
 	}
+
+	ChangeAuthenticationKeyResponse struct {
+		ObjectID uint16
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -131,6 +135,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseEchoResponse(payload)
 	case CommandTypeDeriveEcdh:
 		return parseDeriveEcdhResponse(payload)
+	case CommandTypeChangeAuthenticationKey:
+		return parseChangeAuthenticationKeyResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -260,6 +266,20 @@ func parseDeriveEcdhResponse(payload []byte) (Response, error) {
 	return &DeriveEcdhResponse{
 		XCoordinate: payload,
 	}, nil
+}
+
+func parseChangeAuthenticationKeyResponse(payload []byte) (Response, error) {
+	if len(payload) != 2 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	var objectID uint16
+	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &objectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ChangeAuthenticationKeyResponse{ObjectID: objectID}, nil
 }
 
 // Error formats a card error message into a human readable format

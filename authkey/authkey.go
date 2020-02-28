@@ -1,7 +1,8 @@
-package securechannel
+package authkey
 
 import (
 	"crypto/sha256"
+
 	"golang.org/x/crypto/pbkdf2"
 )
 
@@ -16,17 +17,17 @@ const (
 	yubicoSeed        = "Yubico"
 )
 
-// deriveAuthKeyFromPwd derives an AuthKey using pkdf2 as specified in the HSM documentation
-func deriveAuthKeyFromPwd(password string) AuthKey {
+// NewFromPassword derives an AuthKey using pkdf2 as specified in the HSM documentation
+func NewFromPassword(password string) AuthKey {
 	return pbkdf2.Key([]byte(password), []byte(yubicoSeed), authKeyIterations, authKeyLength, sha256.New)
 }
 
 // GetEncKey returns the EncryptionKey part of the AuthKey
 func (k AuthKey) GetEncKey() []byte {
-	return k[:KeyLength]
+	return k[:authKeyLength/2]
 }
 
-// GetEncKey returns the MACKey part of the AuthKey
+// GetMacKey returns the MACKey part of the AuthKey
 func (k AuthKey) GetMacKey() []byte {
-	return k[KeyLength:]
+	return k[authKeyLength/2:]
 }
