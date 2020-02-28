@@ -13,6 +13,7 @@ Currently the following commands are implemented:
  * GetPubKey
  * DeriveEcdh
  * Echo
+ * ChangeAuthenticationKey
  * Authentication & Session related commands
 
 Implementing new commands is really easy. Please consult `commands/constructors.go` and `commands/response.go` for reference.

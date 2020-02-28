@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/enceve/crypto/cmac"
+	"github.com/certusone/yubihsm-go/authkey"
 	"github.com/certusone/yubihsm-go/commands"
 	"github.com/certusone/yubihsm-go/connector"
 )
@@ -39,7 +40,7 @@ type (
 		DeviceChallenge []byte
 
 		// AuthKey to authenticate against the HSM; must match authKeySlot
-		AuthKey AuthKey
+		AuthKey authkey.AuthKey
 
 		// MACChainValue is the last MAC to allow MAC chaining
 		MACChainValue []byte
@@ -89,7 +90,7 @@ const (
 func NewSecureChannel(connector connector.Connector, authKeySlot uint16, password string) (*SecureChannel, error) {
 	channel := &SecureChannel{
 		ID:            0,
-		AuthKey:       deriveAuthKeyFromPwd(password),
+		AuthKey:       authkey.NewFromPassword(password),
 		MACChainValue: make([]byte, 16),
 		SecurityLevel: SecurityLevelUnauthenticated,
 		authKeySlot:   authKeySlot,

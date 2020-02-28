@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 	"errors"
 	"io"
+
+	"github.com/certusone/yubihsm-go/authkey"
 )
 
 func CreateCreateSessionCommand(keySetID uint16, hostChallenge []byte) (*CommandMessage, error) {
@@ -214,6 +216,22 @@ func CreateDeriveEcdhCommand(objID uint16, pubkey []byte) (*CommandMessage, erro
 	payload := bytes.NewBuffer([]byte{})
 	binary.Write(payload, binary.BigEndian, objID)
 	payload.Write(pubkey)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreateChangeAuthenticationKeyCommand(objID uint16, newPassword string) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeChangeAuthenticationKey,
+	}
+
+	authKey := authkey.NewFromPassword(newPassword)
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	binary.Write(payload, binary.BigEndian, AlgorithmYubicoAESAuthentication)
+	payload.Write(authKey.GetEncKey())
+	payload.Write(authKey.GetMacKey())
 	command.Data = payload.Bytes()
 
 	return command, nil
