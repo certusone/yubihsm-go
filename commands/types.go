@@ -82,8 +82,8 @@ const (
 	// Algorithms
 	AlgorithmP256                    Algorithm = 12
 	AlgorithmSecp256k1               Algorithm = 15
-	AlgorighmED25519                 Algorithm = 46
 	AlgorithmYubicoAESAuthentication Algorithm = 38
+	AlgorighmED25519                 Algorithm = 46
 
 	// Capabilities
 	CapabilityGetOpaque             uint64 = 0x0000000000000001
