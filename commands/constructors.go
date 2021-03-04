@@ -248,3 +248,31 @@ func CreateGetPseudoRandomCommand(numBytes uint16) *CommandMessage {
 
 	return command
 }
+
+func CreatePutWrapkeyCommand(objID uint16, label []byte, domains uint16, capabilities, delegated uint64, wrapkey []byte) (*CommandMessage, error) {
+	if len(label) > LabelLength {
+		return nil, errors.New("label is too long")
+	}
+	if len(label) < LabelLength {
+		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
+	}
+	if keyLen := len(wrapkey); keyLen != 16 && keyLen != 24 && keyLen != 32 {
+		return nil, errors.New("wrapkey is wrong length")
+	}
+
+	command := &CommandMessage{
+		CommandType: CommandTypePutWrapKey,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	payload.Write(label)
+	binary.Write(payload, binary.BigEndian, domains)
+	binary.Write(payload, binary.BigEndian, capabilities)
+	binary.Write(payload, binary.BigEndian, delegated)
+	payload.Write(wrapkey)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
