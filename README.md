@@ -15,6 +15,7 @@ Currently the following commands are implemented:
  * Echo
  * ChangeAuthenticationKey
  * Authentication & Session related commands
+ * GetPseudoRandom
 
 Implementing new commands is really easy. Please consult `commands/constructors.go` and `commands/response.go` for reference.
 

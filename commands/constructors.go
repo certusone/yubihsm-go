@@ -236,3 +236,15 @@ func CreateChangeAuthenticationKeyCommand(objID uint16, newPassword string) (*Co
 
 	return command, nil
 }
+
+func CreateGetPseudoRandomCommand(numBytes uint16) *CommandMessage {
+	command := &CommandMessage{
+		CommandType: CommandTypeGetPseudoRandom,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, numBytes)
+	command.Data = payload.Bytes()
+
+	return command
+}

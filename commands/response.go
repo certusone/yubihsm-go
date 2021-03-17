@@ -137,6 +137,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseDeriveEcdhResponse(payload)
 	case CommandTypeChangeAuthenticationKey:
 		return parseChangeAuthenticationKeyResponse(payload)
+	case CommandTypeGetPseudoRandom:
+		return parseGetPseudoRandomResponse(payload), nil
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -280,6 +282,10 @@ func parseChangeAuthenticationKeyResponse(payload []byte) (Response, error) {
 	}
 
 	return &ChangeAuthenticationKeyResponse{ObjectID: objectID}, nil
+}
+
+func parseGetPseudoRandomResponse(payload []byte) Response {
+	return payload
 }
 
 // Error formats a card error message into a human readable format
