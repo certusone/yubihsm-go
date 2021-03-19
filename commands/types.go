@@ -84,6 +84,9 @@ const (
 	AlgorithmSecp256k1               Algorithm = 15
 	AlgorithmYubicoAESAuthentication Algorithm = 38
 	AlgorighmED25519                 Algorithm = 46
+	AlgorithmAES128CCMWrap           Algorithm = 29
+	AlgorithmAES192CCMWrap           Algorithm = 41
+	AlgorithmAES256CCMWrap           Algorithm = 42
 
 	// Capabilities
 	CapabilityGetOpaque             uint64 = 0x0000000000000001

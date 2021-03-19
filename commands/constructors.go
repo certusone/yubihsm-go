@@ -248,3 +248,45 @@ func CreateGetPseudoRandomCommand(numBytes uint16) *CommandMessage {
 
 	return command
 }
+
+func CreatePutWrapkeyCommand(objID uint16, label []byte, domains uint16, capabilities uint64, algorithm Algorithm, delegated uint64, wrapkey []byte) (*CommandMessage, error) {
+	if len(label) > LabelLength {
+		return nil, errors.New("label is too long")
+	}
+	if len(label) < LabelLength {
+		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
+	}
+	switch algorithm {
+	case AlgorithmAES128CCMWrap:
+		if keyLen := len(wrapkey); keyLen != 16 {
+			return nil, errors.New("wrapkey is wrong length")
+		}
+	case AlgorithmAES192CCMWrap:
+		if keyLen := len(wrapkey); keyLen != 24 {
+			return nil, errors.New("wrapkey is wrong length")
+		}
+	case AlgorithmAES256CCMWrap:
+		if keyLen := len(wrapkey); keyLen != 32 {
+			return nil, errors.New("wrapkey is wrong length")
+		}
+	default:
+		return nil, errors.New("invalid algorithm")
+	}
+
+	command := &CommandMessage{
+		CommandType: CommandTypePutWrapKey,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	payload.Write(label)
+	binary.Write(payload, binary.BigEndian, domains)
+	binary.Write(payload, binary.BigEndian, capabilities)
+	binary.Write(payload, binary.BigEndian, algorithm)
+	binary.Write(payload, binary.BigEndian, delegated)
+	payload.Write(wrapkey)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}

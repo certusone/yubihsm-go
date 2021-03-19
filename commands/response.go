@@ -83,6 +83,10 @@ type (
 	ChangeAuthenticationKeyResponse struct {
 		ObjectID uint16
 	}
+
+	PutWrapkeyResponse struct {
+		ObjectID uint16
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -139,6 +143,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseChangeAuthenticationKeyResponse(payload)
 	case CommandTypeGetPseudoRandom:
 		return parseGetPseudoRandomResponse(payload), nil
+	case CommandTypePutWrapKey:
+		return parsePutWrapkeyResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -286,6 +292,19 @@ func parseChangeAuthenticationKeyResponse(payload []byte) (Response, error) {
 
 func parseGetPseudoRandomResponse(payload []byte) Response {
 	return payload
+}
+
+func parsePutWrapkeyResponse(payload []byte) (Response, error) {
+	if len(payload) != 2 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	var objectID uint16
+	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &objectID)
+	if err != nil {
+		return nil, err
+	}
+	return &PutWrapkeyResponse{ObjectID: objectID}, nil
 }
 
 // Error formats a card error message into a human readable format
