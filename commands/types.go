@@ -165,3 +165,12 @@ const (
 	ListObjectParamID   uint8 = 0x01
 	ListObjectParamType uint8 = 0x02
 )
+
+// CapabilityPrimitiveFromSlice OR's all the capabilitites together.
+func CapabilityPrimitiveFromSlice(capabilitites []uint64) uint64 {
+	var primitive uint64
+	for _, c := range capabilitites {
+		primitive |= c
+	}
+	return primitive
+}
