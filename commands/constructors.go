@@ -290,3 +290,39 @@ func CreatePutWrapkeyCommand(objID uint16, label []byte, domains uint16, capabil
 
 	return command, nil
 }
+
+func CreatePutAuthkeyCommand(objID uint16, label []byte, domains uint16, capabilities, delegated uint64, encKey, macKey []byte) (*CommandMessage, error) {
+	if len(label) > LabelLength {
+		return nil, errors.New("label is too long")
+	}
+	if len(label) < LabelLength {
+		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
+	}
+	algorithm := AlgorithmYubicoAESAuthentication
+	// TODO: support P256 Authentication when it is released
+	// https://github.com/Yubico/yubihsm-shell/blob/1c8e254603e72f3f39cf1c3910996dbfcdba2b12/lib/yubihsm.c#L3110
+	if len(encKey) != 16 {
+		return nil, errors.New("invalid encryption key length")
+	}
+	if len(macKey) != 16 {
+		return nil, errors.New("invalid mac key length")
+	}
+
+	command := &CommandMessage{
+		CommandType: CommandTypePutAuthKey,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	payload.Write(label)
+	binary.Write(payload, binary.BigEndian, domains)
+	binary.Write(payload, binary.BigEndian, capabilities)
+	binary.Write(payload, binary.BigEndian, algorithm)
+	binary.Write(payload, binary.BigEndian, delegated)
+	payload.Write(encKey)
+	payload.Write(macKey)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
