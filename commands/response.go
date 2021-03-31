@@ -62,6 +62,10 @@ type (
 		Signature []byte
 	}
 
+	SignDataPkcs1Response struct {
+		Signature []byte
+	}
+
 	SignDataEcdsaResponse struct {
 		Signature []byte
 	}
@@ -127,6 +131,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseSignDataEddsaResponse(payload)
 	case CommandTypeSignDataEcdsa:
 		return parseSignDataEcdsaResponse(payload)
+	case CommandTypeSignDataPkcs1:
+		return parseSignDataPkcs1Response(payload)
 	case CommandTypePutAsymmetric:
 		return parsePutAsymmetricKeyResponse(payload)
 	case CommandTypeListObjects:
@@ -206,6 +212,12 @@ func parseCreateAsymmetricKeyResponse(payload []byte) (Response, error) {
 
 func parseSignDataEddsaResponse(payload []byte) (Response, error) {
 	return &SignDataEddsaResponse{
+		Signature: payload,
+	}, nil
+}
+
+func parseSignDataPkcs1Response(payload []byte) (Response, error) {
+	return &SignDataPkcs1Response{
 		Signature: payload,
 	}, nil
 }
