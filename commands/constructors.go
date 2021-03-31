@@ -94,6 +94,20 @@ func CreateSignDataEcdsaCommand(keyID uint16, data []byte) (*CommandMessage, err
 	return command, nil
 }
 
+func CreateSignDataPkcs1Command(keyID uint16, data []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeSignDataPkcs1,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	payload.Write(data)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreatePutAsymmetricKeyCommand(keyID uint16, label []byte, domains uint16, capabilities uint64, algorithm Algorithm, keyPart1 []byte, keyPart2 []byte) (*CommandMessage, error) {
 	if len(label) > LabelLength {
 		return nil, errors.New("label is too long")

@@ -9,6 +9,7 @@ Currently the following commands are implemented:
  * Reset
  * GenerateAsymmetricKey
  * SignDataEddsa
+ * SignDataPkcs1
  * PutAsymmetricKey
  * GetPubKey
  * DeriveEcdh
