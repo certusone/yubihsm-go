@@ -23,7 +23,7 @@ const (
 	CommandTypeStorageStatus           CommandType = 0x41
 	CommandTypePutOpaque               CommandType = 0x42
 	CommandTypeGetOpaque               CommandType = 0x43
-	CommandTypePutAuthKey              CommandType = 0x44
+	CommandTypePutAuthenticationKey    CommandType = 0x44
 	CommandTypePutAsymmetric           CommandType = 0x45
 	CommandTypeGenerateAsymmetricKey   CommandType = 0x46
 	CommandTypeSignDataPkcs1           CommandType = 0x47
@@ -64,23 +64,24 @@ const (
 	CommandTypeChangeAuthenticationKey CommandType = 0x6c
 
 	// Errors
-	ErrorCodeOK                         ErrorCode = 0x00
-	ErrorCodeInvalidCommand             ErrorCode = 0x01
-	ErrorCodeInvalidData                ErrorCode = 0x02
-	ErrorCodeInvalidSession             ErrorCode = 0x03
-	ErrorCodeAuthFail                   ErrorCode = 0x04
-	ErrorCodeSessionFull                ErrorCode = 0x05
-	ErrorCodeSessionFailed              ErrorCode = 0x06
-	ErrorCodeStorageFailed              ErrorCode = 0x07
-	ErrorCodeWrongLength                ErrorCode = 0x08
-	ErrorCodeInvalidPermission          ErrorCode = 0x09
-	ErrorCodeLogFull                    ErrorCode = 0x0a
-	ErrorCodeObjectNotFound             ErrorCode = 0x0b
-	ErrorCodeInvalidID                  ErrorCode = 0x0c
-	ErrorCodeSSHCAConstraintViolation   ErrorCode = 0x0e
-	ErrorCodeInvalidOTP                 ErrorCode = 0x0f
-	ErrorCodeDemoMode                   ErrorCode = 0x10
-	ErrorCodeObjectExists               ErrorCode = 0x11
+	ErrorCodeOK                       ErrorCode = 0x00
+	ErrorCodeInvalidCommand           ErrorCode = 0x01
+	ErrorCodeInvalidData              ErrorCode = 0x02
+	ErrorCodeInvalidSession           ErrorCode = 0x03
+	ErrorCodeAuthFail                 ErrorCode = 0x04
+	ErrorCodeSessionFull              ErrorCode = 0x05
+	ErrorCodeSessionFailed            ErrorCode = 0x06
+	ErrorCodeStorageFailed            ErrorCode = 0x07
+	ErrorCodeWrongLength              ErrorCode = 0x08
+	ErrorCodeInvalidPermission        ErrorCode = 0x09
+	ErrorCodeLogFull                  ErrorCode = 0x0a
+	ErrorCodeObjectNotFound           ErrorCode = 0x0b
+	ErrorCodeInvalidID                ErrorCode = 0x0c
+	ErrorCodeSSHCAConstraintViolation ErrorCode = 0x0e
+	ErrorCodeInvalidOTP               ErrorCode = 0x0f
+	ErrorCodeDemoMode                 ErrorCode = 0x10
+	ErrorCodeObjectExists             ErrorCode = 0x11
+	ErrorCodeCommandUnexecuted        ErrorCode = 0xff
 
 	// Algorithms
 	AlgorithmRSA2048                 Algorithm = 9
@@ -89,58 +90,61 @@ const (
 	AlgorithmOpaqueData              Algorithm = 30
 	AlgorithmOpaqueX509Certificate   Algorithm = 31
 	AlgorithmYubicoAESAuthentication Algorithm = 38
+	AlgorithmAES128CCMWrap           Algorithm = 29
+	AlgorithmAES192CCMWrap           Algorithm = 41
+	AlgorithmAES256CCMWrap           Algorithm = 42
 	AlgorithmED25519                 Algorithm = 46
 
 	// Capabilities
-	CapabilityNone                  uint64 = 0x0000000000000000
-	CapabilityGetOpaque             uint64 = 0x0000000000000001
-	CapabilityPutOpaque             uint64 = 0x0000000000000002
-	CapabilityPutAuthKey            uint64 = 0x0000000000000004
-	CapabilityPutAsymmetric         uint64 = 0x0000000000000008
-	CapabilityAsymmetricGen         uint64 = 0x0000000000000010
-	CapabilityAsymmetricSignPkcs    uint64 = 0x0000000000000020
-	CapabilityAsymmetricSignPss     uint64 = 0x0000000000000040
-	CapabilityAsymmetricSignEcdsa   uint64 = 0x0000000000000080
-	CapabilityAsymmetricSignEddsa   uint64 = 0x0000000000000100
-	CapabilityAsymmetricDecryptPkcs uint64 = 0x0000000000000200
-	CapabilityAsymmetricDecryptOaep uint64 = 0x0000000000000400
-	CapabilityAsymmetricDecryptEcdh uint64 = 0x0000000000000800 // here for backwards compatibility
-	CapabilityAsymmetricDeriveEcdh  uint64 = 0x0000000000000800
-	CapabilityExportWrapped         uint64 = 0x0000000000001000
-	CapabilityImportWrapped         uint64 = 0x0000000000002000
-	CapabilityPutWrapKey            uint64 = 0x0000000000004000
-	CapabilityGenerateWrapKey       uint64 = 0x0000000000008000
-	CapabilityExportableUnderWrap   uint64 = 0x0000000000010000
-	CapabilityPutOption             uint64 = 0x0000000000020000
-	CapabilityGetOption             uint64 = 0x0000000000040000
-	CapabilityGetRandomness         uint64 = 0x0000000000080000
-	CapabilityPutHmacKey            uint64 = 0x0000000000100000
-	CapabilityHmacKeyGenerate       uint64 = 0x0000000000200000
-	CapabilityHmacData              uint64 = 0x0000000000400000
-	CapabilityHmacVerify            uint64 = 0x0000000000800000
-	CapabilityAudit                 uint64 = 0x0000000001000000
-	CapabilitySshCertify            uint64 = 0x0000000002000000
-	CapabilityGetTemplate           uint64 = 0x0000000004000000
-	CapabilityPutTemplate           uint64 = 0x0000000008000000
-	CapabilityReset                 uint64 = 0x0000000010000000
-	CapabilityOtpDecrypt            uint64 = 0x0000000020000000
-	CapabilityOtpAeadCreate         uint64 = 0x0000000040000000
-	CapabilityOtpAeadRandom         uint64 = 0x0000000080000000
-	CapabilityOtpAeadRewrapFrom     uint64 = 0x0000000100000000
-	CapabilityOtpAeadRewrapTo       uint64 = 0x0000000200000000
-	CapabilityAttest                uint64 = 0x0000000400000000
-	CapabilityPutOtpAeadKey         uint64 = 0x0000000800000000
-	CapabilityGenerateOtpAeadKey    uint64 = 0x0000001000000000
-	CapabilityWrapData              uint64 = 0x0000002000000000
-	CapabilityUnwrapData            uint64 = 0x0000004000000000
-	CapabilityDeleteOpaque          uint64 = 0x0000008000000000
-	CapabilityDeleteAuthKey         uint64 = 0x0000010000000000
-	CapabilityDeleteAsymmetric      uint64 = 0x0000020000000000
-	CapabilityDeleteWrapKey         uint64 = 0x0000040000000000
-	CapabilityDeleteHmacKey         uint64 = 0x0000080000000000
-	CapabilityDeleteTemplate        uint64 = 0x0000100000000000
-	CapabilityDeleteOtpAeadKey      uint64 = 0x0000200000000000
-	CapabilityChangeAuthKey         uint64 = 0x0000400000000000
+	CapabilityNone                    uint64 = 0x0000000000000000
+	CapabilityGetOpaque               uint64 = 0x0000000000000001
+	CapabilityPutOpaque               uint64 = 0x0000000000000002
+	CapabilityPutAuthenticationKey    uint64 = 0x0000000000000004
+	CapabilityPutAsymmetric           uint64 = 0x0000000000000008
+	CapabilityAsymmetricGen           uint64 = 0x0000000000000010
+	CapabilityAsymmetricSignPkcs      uint64 = 0x0000000000000020
+	CapabilityAsymmetricSignPss       uint64 = 0x0000000000000040
+	CapabilityAsymmetricSignEcdsa     uint64 = 0x0000000000000080
+	CapabilityAsymmetricSignEddsa     uint64 = 0x0000000000000100
+	CapabilityAsymmetricDecryptPkcs   uint64 = 0x0000000000000200
+	CapabilityAsymmetricDecryptOaep   uint64 = 0x0000000000000400
+	CapabilityAsymmetricDecryptEcdh   uint64 = 0x0000000000000800 // here for backwards compatibility
+	CapabilityAsymmetricDeriveEcdh    uint64 = 0x0000000000000800
+	CapabilityExportWrapped           uint64 = 0x0000000000001000
+	CapabilityImportWrapped           uint64 = 0x0000000000002000
+	CapabilityPutWrapKey              uint64 = 0x0000000000004000
+	CapabilityGenerateWrapKey         uint64 = 0x0000000000008000
+	CapabilityExportableUnderWrap     uint64 = 0x0000000000010000
+	CapabilityPutOption               uint64 = 0x0000000000020000
+	CapabilityGetOption               uint64 = 0x0000000000040000
+	CapabilityGetRandomness           uint64 = 0x0000000000080000
+	CapabilityPutHmacKey              uint64 = 0x0000000000100000
+	CapabilityHmacKeyGenerate         uint64 = 0x0000000000200000
+	CapabilityHmacData                uint64 = 0x0000000000400000
+	CapabilityHmacVerify              uint64 = 0x0000000000800000
+	CapabilityAudit                   uint64 = 0x0000000001000000
+	CapabilitySshCertify              uint64 = 0x0000000002000000
+	CapabilityGetTemplate             uint64 = 0x0000000004000000
+	CapabilityPutTemplate             uint64 = 0x0000000008000000
+	CapabilityReset                   uint64 = 0x0000000010000000
+	CapabilityOtpDecrypt              uint64 = 0x0000000020000000
+	CapabilityOtpAeadCreate           uint64 = 0x0000000040000000
+	CapabilityOtpAeadRandom           uint64 = 0x0000000080000000
+	CapabilityOtpAeadRewrapFrom       uint64 = 0x0000000100000000
+	CapabilityOtpAeadRewrapTo         uint64 = 0x0000000200000000
+	CapabilityAttest                  uint64 = 0x0000000400000000
+	CapabilityPutOtpAeadKey           uint64 = 0x0000000800000000
+	CapabilityGenerateOtpAeadKey      uint64 = 0x0000001000000000
+	CapabilityWrapData                uint64 = 0x0000002000000000
+	CapabilityUnwrapData              uint64 = 0x0000004000000000
+	CapabilityDeleteOpaque            uint64 = 0x0000008000000000
+	CapabilityDeleteAuthKey           uint64 = 0x0000010000000000
+	CapabilityDeleteAsymmetric        uint64 = 0x0000020000000000
+	CapabilityDeleteWrapKey           uint64 = 0x0000040000000000
+	CapabilityDeleteHmacKey           uint64 = 0x0000080000000000
+	CapabilityDeleteTemplate          uint64 = 0x0000100000000000
+	CapabilityDeleteOtpAeadKey        uint64 = 0x0000200000000000
+	CapabilityChangeAuthenticationKey uint64 = 0x0000400000000000
 
 	// Domains
 	Domain1  uint16 = 0x0001
@@ -170,10 +174,19 @@ const (
 	ObjectTypeOtpAeadKey        uint8 = 0x07
 
 	// list objects params
-	ListObjectParamID   		uint8 = 0x01
-	ListObjectParamType 		uint8 = 0x02
-	ListObjectParamDomains   	uint8 = 0x03
-	ListObjectParamCapabilities	uint8 = 0x04
-	ListObjectParamAlgorithm   	uint8 = 0x05
-	ListObjectParamLabel 		uint8 = 0x06
+	ListObjectParamID           uint8 = 0x01
+	ListObjectParamType         uint8 = 0x02
+	ListObjectParamDomains      uint8 = 0x03
+	ListObjectParamCapabilities uint8 = 0x04
+	ListObjectParamAlgorithm    uint8 = 0x05
+	ListObjectParamLabel        uint8 = 0x06
 )
+
+// CapabilityPrimitiveFromSlice OR's all the capabilitites together.
+func CapabilityPrimitiveFromSlice(capabilitites []uint64) uint64 {
+	var primitive uint64
+	for _, c := range capabilitites {
+		primitive |= c
+	}
+	return primitive
+}

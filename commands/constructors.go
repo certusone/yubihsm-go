@@ -94,6 +94,20 @@ func CreateSignDataEcdsaCommand(keyID uint16, data []byte) (*CommandMessage, err
 	return command, nil
 }
 
+func CreateSignDataPkcs1Command(keyID uint16, data []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeSignDataPkcs1,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	payload.Write(data)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreatePutAsymmetricKeyCommand(keyID uint16, label []byte, domains uint16, capabilities uint64, algorithm Algorithm, keyPart1 []byte, keyPart2 []byte) (*CommandMessage, error) {
 	if len(label) > LabelLength {
 		return nil, errors.New("label is too long")
@@ -241,33 +255,6 @@ func CreateDeriveEcdhCommand(objID uint16, pubkey []byte) (*CommandMessage, erro
 	return command, nil
 }
 
-func CreatePutAuthenticationKeyCommand(objID uint16, label []byte, domains uint16, capabilities uint64, delegated uint64, password string) (*CommandMessage, error) {
-	if len(label) > LabelLength {
-		return nil, errors.New("label is too long")
-	}
-	if len(label) < LabelLength {
-		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
-	}
-
-	command := &CommandMessage{
-		CommandType: CommandTypePutAuthKey,
-	}
-
-	authKey := authkey.NewFromPassword(password)
-	payload := bytes.NewBuffer([]byte{})
-	binary.Write(payload, binary.BigEndian, objID)
-	payload.Write(label)
-	binary.Write(payload, binary.BigEndian, domains)
-	binary.Write(payload, binary.BigEndian, capabilities)
-	binary.Write(payload, binary.BigEndian, AlgorithmYubicoAESAuthentication)
-	binary.Write(payload, binary.BigEndian, delegated)
-	payload.Write(authKey.GetEncKey())
-	payload.Write(authKey.GetMacKey())
-	command.Data = payload.Bytes()
-
-	return command, nil
-}
-
 func CreateChangeAuthenticationKeyCommand(objID uint16, newPassword string) (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeChangeAuthenticationKey,
@@ -321,18 +308,99 @@ func CreateGetOpaqueCommand(objID uint16) (*CommandMessage, error) {
 	return command, nil
 }
 
-func CreateSignDataPkcs1Command(objID uint16, data []byte) (*CommandMessage, error) {
+func CreateGetPseudoRandomCommand(numBytes uint16) *CommandMessage {
 	command := &CommandMessage{
-		CommandType: CommandTypeSignDataPkcs1,
+		CommandType: CommandTypeGetPseudoRandom,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, numBytes)
+	command.Data = payload.Bytes()
+
+	return command
+}
+
+func CreatePutWrapkeyCommand(objID uint16, label []byte, domains uint16, capabilities uint64, algorithm Algorithm, delegated uint64, wrapkey []byte) (*CommandMessage, error) {
+	if len(label) > LabelLength {
+		return nil, errors.New("label is too long")
+	}
+	if len(label) < LabelLength {
+		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
+	}
+	switch algorithm {
+	case AlgorithmAES128CCMWrap:
+		if keyLen := len(wrapkey); keyLen != 16 {
+			return nil, errors.New("wrapkey is wrong length")
+		}
+	case AlgorithmAES192CCMWrap:
+		if keyLen := len(wrapkey); keyLen != 24 {
+			return nil, errors.New("wrapkey is wrong length")
+		}
+	case AlgorithmAES256CCMWrap:
+		if keyLen := len(wrapkey); keyLen != 32 {
+			return nil, errors.New("wrapkey is wrong length")
+		}
+	default:
+		return nil, errors.New("invalid algorithm")
+	}
+
+	command := &CommandMessage{
+		CommandType: CommandTypePutWrapKey,
 	}
 
 	payload := bytes.NewBuffer([]byte{})
 	binary.Write(payload, binary.BigEndian, objID)
-	payload.Write(data)
+	payload.Write(label)
+	binary.Write(payload, binary.BigEndian, domains)
+	binary.Write(payload, binary.BigEndian, capabilities)
+	binary.Write(payload, binary.BigEndian, algorithm)
+	binary.Write(payload, binary.BigEndian, delegated)
+	payload.Write(wrapkey)
 
 	command.Data = payload.Bytes()
 
 	return command, nil
+}
+
+func CreatePutAuthenticationKeyCommand(objID uint16, label []byte, domains uint16, capabilities, delegated uint64, encKey, macKey []byte) (*CommandMessage, error) {
+	if len(label) > LabelLength {
+		return nil, errors.New("label is too long")
+	}
+	if len(label) < LabelLength {
+		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
+	}
+	algorithm := AlgorithmYubicoAESAuthentication
+	// TODO: support P256 Authentication when it is released
+	// https://github.com/Yubico/yubihsm-shell/blob/1c8e254603e72f3f39cf1c3910996dbfcdba2b12/lib/yubihsm.c#L3110
+	if len(encKey) != 16 {
+		return nil, errors.New("invalid encryption key length")
+	}
+	if len(macKey) != 16 {
+		return nil, errors.New("invalid mac key length")
+	}
+
+	command := &CommandMessage{
+		CommandType: CommandTypePutAuthenticationKey,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	payload.Write(label)
+	binary.Write(payload, binary.BigEndian, domains)
+	binary.Write(payload, binary.BigEndian, capabilities)
+	binary.Write(payload, binary.BigEndian, algorithm)
+	binary.Write(payload, binary.BigEndian, delegated)
+	payload.Write(encKey)
+	payload.Write(macKey)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreatePutDerivedAuthenticationKeyCommand(objID uint16, label []byte, domains uint16, capabilities uint64, delegated uint64, password string) (*CommandMessage, error) {
+	authKey := authkey.NewFromPassword(password)
+	return CreatePutAuthenticationKeyCommand(objID, label, domains, capabilities, delegated, authKey.GetEncKey(), authKey.GetMacKey())
 }
 
 func CreateSignAttestationCertCommand(keyObjID, attestationObjID uint16) (*CommandMessage, error) {

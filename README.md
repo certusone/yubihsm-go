@@ -9,6 +9,7 @@ Currently the following commands are implemented:
  * Reset
  * GenerateAsymmetricKey
  * SignDataEddsa
+ * SignDataPkcs1
  * PutAsymmetricKey
  * GetPubKey
  * DeriveEcdh
@@ -17,9 +18,9 @@ Currently the following commands are implemented:
  * PutAuthenticationKey
  * GetOpaque
  * PutOpaque
- * SignDataPkcs1
  * SignAttestationCertificate
  * Authentication & Session related commands
+ * GetPseudoRandom
 
 Implementing new commands is really easy. Please consult `commands/constructors.go` and `commands/response.go` for reference.
 
