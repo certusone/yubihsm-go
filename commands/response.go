@@ -62,10 +62,6 @@ type (
 		Signature []byte
 	}
 
-	SignDataPkcs1Response struct {
-		Signature []byte
-	}
-
 	SignDataEcdsaResponse struct {
 		Signature []byte
 	}
@@ -84,16 +80,28 @@ type (
 		XCoordinate []byte
 	}
 
+	PutAuthenticationKeyResponse struct {
+		ObjectID uint16
+	}
+
 	ChangeAuthenticationKeyResponse struct {
 		ObjectID uint16
 	}
 
-	PutWrapkeyResponse struct {
+	PutOpaqueResponse struct {
 		ObjectID uint16
 	}
 
-	PutAuthkeyResponse struct {
-		ObjectID uint16
+	GetOpaqueResponse struct {
+		Data []byte
+	}
+
+	SignDataPkcs1Response struct {
+		Signature []byte
+	}
+
+	SignAttestationCertResponse struct {
+		Cert []byte
 	}
 )
 
@@ -131,8 +139,6 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseSignDataEddsaResponse(payload)
 	case CommandTypeSignDataEcdsa:
 		return parseSignDataEcdsaResponse(payload)
-	case CommandTypeSignDataPkcs1:
-		return parseSignDataPkcs1Response(payload)
 	case CommandTypePutAsymmetric:
 		return parsePutAsymmetricKeyResponse(payload)
 	case CommandTypeListObjects:
@@ -149,14 +155,18 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseEchoResponse(payload)
 	case CommandTypeDeriveEcdh:
 		return parseDeriveEcdhResponse(payload)
+	case CommandTypePutAuthKey:
+		return parsePutAuthenticationKeyResponse(payload)
 	case CommandTypeChangeAuthenticationKey:
 		return parseChangeAuthenticationKeyResponse(payload)
-	case CommandTypeGetPseudoRandom:
-		return parseGetPseudoRandomResponse(payload), nil
-	case CommandTypePutWrapKey:
-		return parsePutWrapkeyResponse(payload)
-	case CommandTypePutAuthKey:
-		return parsePutAuthkeyResponse(payload)
+	case CommandTypePutOpaque:
+		return parsePutOpaqueResponse(payload)
+	case CommandTypeGetOpaque:
+		return parseGetOpaqueResponse(payload)
+	case CommandTypeSignDataPkcs1:
+		return parseSignDataPkcs1Response(payload)
+	case CommandTypeAttestAsymmetric:
+		return parseAttestationCertResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -212,12 +222,6 @@ func parseCreateAsymmetricKeyResponse(payload []byte) (Response, error) {
 
 func parseSignDataEddsaResponse(payload []byte) (Response, error) {
 	return &SignDataEddsaResponse{
-		Signature: payload,
-	}, nil
-}
-
-func parseSignDataPkcs1Response(payload []byte) (Response, error) {
-	return &SignDataPkcs1Response{
 		Signature: payload,
 	}, nil
 }
@@ -294,6 +298,20 @@ func parseDeriveEcdhResponse(payload []byte) (Response, error) {
 	}, nil
 }
 
+func parsePutAuthenticationKeyResponse(payload []byte) (Response, error) {
+	if len(payload) != 2 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	var objectID uint16
+	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &objectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PutAuthenticationKeyResponse{ObjectID: objectID}, nil
+}
+
 func parseChangeAuthenticationKeyResponse(payload []byte) (Response, error) {
 	if len(payload) != 2 {
 		return nil, errors.New("invalid response payload length")
@@ -308,11 +326,7 @@ func parseChangeAuthenticationKeyResponse(payload []byte) (Response, error) {
 	return &ChangeAuthenticationKeyResponse{ObjectID: objectID}, nil
 }
 
-func parseGetPseudoRandomResponse(payload []byte) Response {
-	return payload
-}
-
-func parsePutWrapkeyResponse(payload []byte) (Response, error) {
+func parsePutOpaqueResponse(payload []byte) (Response, error) {
 	if len(payload) != 2 {
 		return nil, errors.New("invalid response payload length")
 	}
@@ -322,20 +336,40 @@ func parsePutWrapkeyResponse(payload []byte) (Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &PutWrapkeyResponse{ObjectID: objectID}, nil
+
+	return &PutOpaqueResponse{
+		ObjectID: objectID,
+	}, nil
 }
 
-func parsePutAuthkeyResponse(payload []byte) (Response, error) {
-	if len(payload) != 2 {
+func parseGetOpaqueResponse(payload []byte) (Response, error) {
+	if len(payload) < 1 {
 		return nil, errors.New("invalid response payload length")
 	}
 
-	var objectID uint16
-	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &objectID)
-	if err != nil {
-		return nil, err
+	return &GetOpaqueResponse{
+		Data: payload,
+	}, nil
+}
+
+func parseSignDataPkcs1Response(payload []byte) (Response, error) {
+	if len(payload) < 1 {
+		return nil, errors.New("invalid response payload length")
 	}
-	return &PutAuthkeyResponse{ObjectID: objectID}, nil
+
+	return &SignDataPkcs1Response{
+		Signature: payload,
+	}, nil
+}
+
+func parseAttestationCertResponse(payload []byte) (Response, error) {
+	if len(payload) < 1 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	return &SignAttestationCertResponse{
+		Cert: payload,
+	}, nil
 }
 
 // Error formats a card error message into a human readable format
@@ -366,12 +400,18 @@ func (e *Error) Error() string {
 		message = "Log full"
 	case ErrorCodeObjectNotFound:
 		message = "Object not found"
-	case ErrorCodeIDIllegal:
-		message = "ID illegal"
-	case ErrorCodeCommandUnexecuted:
-		message = "Command unexecuted"
+	case ErrorCodeInvalidID:
+		message = "Invalid ID"
+	case ErrorCodeSSHCAConstraintViolation:
+		message = "SSH CA constraint violation"
+	case ErrorCodeInvalidOTP:
+		message = "Invalid OTP"
+	case ErrorCodeDemoMode:
+		message = "Demo mode"
+	case ErrorCodeObjectExists:
+		message = "Object exists"
 	default:
-		message = "unknown"
+		message = "Unknown"
 	}
 
 	return fmt.Sprintf("card responded with error: %s", message)

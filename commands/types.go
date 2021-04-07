@@ -64,31 +64,35 @@ const (
 	CommandTypeChangeAuthenticationKey CommandType = 0x6c
 
 	// Errors
-	ErrorCodeOK                ErrorCode = 0x00
-	ErrorCodeInvalidCommand    ErrorCode = 0x01
-	ErrorCodeInvalidData       ErrorCode = 0x02
-	ErrorCodeInvalidSession    ErrorCode = 0x03
-	ErrorCodeAuthFail          ErrorCode = 0x04
-	ErrorCodeSessionFull       ErrorCode = 0x05
-	ErrorCodeSessionFailed     ErrorCode = 0x06
-	ErrorCodeStorageFailed     ErrorCode = 0x07
-	ErrorCodeWrongLength       ErrorCode = 0x08
-	ErrorCodeInvalidPermission ErrorCode = 0x09
-	ErrorCodeLogFull           ErrorCode = 0x0a
-	ErrorCodeObjectNotFound    ErrorCode = 0x0b
-	ErrorCodeIDIllegal         ErrorCode = 0x0c
-	ErrorCodeCommandUnexecuted ErrorCode = 0xff
+	ErrorCodeOK                         ErrorCode = 0x00
+	ErrorCodeInvalidCommand             ErrorCode = 0x01
+	ErrorCodeInvalidData                ErrorCode = 0x02
+	ErrorCodeInvalidSession             ErrorCode = 0x03
+	ErrorCodeAuthFail                   ErrorCode = 0x04
+	ErrorCodeSessionFull                ErrorCode = 0x05
+	ErrorCodeSessionFailed              ErrorCode = 0x06
+	ErrorCodeStorageFailed              ErrorCode = 0x07
+	ErrorCodeWrongLength                ErrorCode = 0x08
+	ErrorCodeInvalidPermission          ErrorCode = 0x09
+	ErrorCodeLogFull                    ErrorCode = 0x0a
+	ErrorCodeObjectNotFound             ErrorCode = 0x0b
+	ErrorCodeInvalidID                  ErrorCode = 0x0c
+	ErrorCodeSSHCAConstraintViolation   ErrorCode = 0x0e
+	ErrorCodeInvalidOTP                 ErrorCode = 0x0f
+	ErrorCodeDemoMode                   ErrorCode = 0x10
+	ErrorCodeObjectExists               ErrorCode = 0x11
 
 	// Algorithms
+	AlgorithmRSA2048                 Algorithm = 9
 	AlgorithmP256                    Algorithm = 12
 	AlgorithmSecp256k1               Algorithm = 15
+	AlgorithmOpaqueData              Algorithm = 30
+	AlgorithmOpaqueX509Certificate   Algorithm = 31
 	AlgorithmYubicoAESAuthentication Algorithm = 38
-	AlgorighmED25519                 Algorithm = 46
-	AlgorithmAES128CCMWrap           Algorithm = 29
-	AlgorithmAES192CCMWrap           Algorithm = 41
-	AlgorithmAES256CCMWrap           Algorithm = 42
+	AlgorithmED25519                 Algorithm = 46
 
 	// Capabilities
+	CapabilityNone                  uint64 = 0x0000000000000000
 	CapabilityGetOpaque             uint64 = 0x0000000000000001
 	CapabilityPutOpaque             uint64 = 0x0000000000000002
 	CapabilityPutAuthKey            uint64 = 0x0000000000000004
@@ -106,7 +110,7 @@ const (
 	CapabilityImportWrapped         uint64 = 0x0000000000002000
 	CapabilityPutWrapKey            uint64 = 0x0000000000004000
 	CapabilityGenerateWrapKey       uint64 = 0x0000000000008000
-	CapabilityExportUnderWrap       uint64 = 0x0000000000010000
+	CapabilityExportableUnderWrap   uint64 = 0x0000000000010000
 	CapabilityPutOption             uint64 = 0x0000000000020000
 	CapabilityGetOption             uint64 = 0x0000000000040000
 	CapabilityGetRandomness         uint64 = 0x0000000000080000
@@ -136,6 +140,7 @@ const (
 	CapabilityDeleteHmacKey         uint64 = 0x0000080000000000
 	CapabilityDeleteTemplate        uint64 = 0x0000100000000000
 	CapabilityDeleteOtpAeadKey      uint64 = 0x0000200000000000
+	CapabilityChangeAuthKey         uint64 = 0x0000400000000000
 
 	// Domains
 	Domain1  uint16 = 0x0001
@@ -165,15 +170,10 @@ const (
 	ObjectTypeOtpAeadKey        uint8 = 0x07
 
 	// list objects params
-	ListObjectParamID   uint8 = 0x01
-	ListObjectParamType uint8 = 0x02
+	ListObjectParamID   		uint8 = 0x01
+	ListObjectParamType 		uint8 = 0x02
+	ListObjectParamDomains   	uint8 = 0x03
+	ListObjectParamCapabilities	uint8 = 0x04
+	ListObjectParamAlgorithm   	uint8 = 0x05
+	ListObjectParamLabel 		uint8 = 0x06
 )
-
-// CapabilityPrimitiveFromSlice OR's all the capabilitites together.
-func CapabilityPrimitiveFromSlice(capabilitites []uint64) uint64 {
-	var primitive uint64
-	for _, c := range capabilitites {
-		primitive |= c
-	}
-	return primitive
-}
