@@ -362,7 +362,7 @@ func CreatePutWrapkeyCommand(objID uint16, label []byte, domains uint16, capabil
 	return command, nil
 }
 
-func CreatePutAuthenticationKeyCommand(objID uint16, label []byte, domains uint16, capabilities, delegated uint64, encKey, macKey []byte) (*CommandMessage, error) {
+func CreatePutAuthkeyCommand(objID uint16, label []byte, domains uint16, capabilities, delegated uint64, encKey, macKey []byte) (*CommandMessage, error) {
 	if len(label) > LabelLength {
 		return nil, errors.New("label is too long")
 	}
@@ -380,7 +380,7 @@ func CreatePutAuthenticationKeyCommand(objID uint16, label []byte, domains uint1
 	}
 
 	command := &CommandMessage{
-		CommandType: CommandTypePutAuthenticationKey,
+		CommandType: CommandTypePutAuthKey,
 	}
 
 	payload := bytes.NewBuffer([]byte{})
@@ -400,7 +400,7 @@ func CreatePutAuthenticationKeyCommand(objID uint16, label []byte, domains uint1
 
 func CreatePutDerivedAuthenticationKeyCommand(objID uint16, label []byte, domains uint16, capabilities uint64, delegated uint64, password string) (*CommandMessage, error) {
 	authKey := authkey.NewFromPassword(password)
-	return CreatePutAuthenticationKeyCommand(objID, label, domains, capabilities, delegated, authKey.GetEncKey(), authKey.GetMacKey())
+	return CreatePutAuthkeyCommand(objID, label, domains, capabilities, delegated, authKey.GetEncKey(), authKey.GetMacKey())
 }
 
 func CreateSignAttestationCertCommand(keyObjID, attestationObjID uint16) (*CommandMessage, error) {

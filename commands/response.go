@@ -92,7 +92,7 @@ type (
 		ObjectID uint16
 	}
 
-	PutAuthenticationKeyResponse struct {
+	PutAuthkeyResponse struct {
 		ObjectID uint16
 	}
 
@@ -167,8 +167,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseGetPseudoRandomResponse(payload), nil
 	case CommandTypePutWrapKey:
 		return parsePutWrapkeyResponse(payload)
-	case CommandTypePutAuthenticationKey:
-		return parsePutAuthenticationKeyResponse(payload)
+	case CommandTypePutAuthKey:
+		return parsePutAuthkeyResponse(payload)
 	case CommandTypePutOpaque:
 		return parsePutOpaqueResponse(payload)
 	case CommandTypeGetOpaque:
@@ -347,7 +347,7 @@ func parsePutWrapkeyResponse(payload []byte) (Response, error) {
 	return &PutWrapkeyResponse{ObjectID: objectID}, nil
 }
 
-func parsePutAuthenticationKeyResponse(payload []byte) (Response, error) {
+func parsePutAuthkeyResponse(payload []byte) (Response, error) {
 	if len(payload) != 2 {
 		return nil, errors.New("invalid response payload length")
 	}
@@ -358,7 +358,7 @@ func parsePutAuthenticationKeyResponse(payload []byte) (Response, error) {
 		return nil, err
 	}
 
-	return &PutAuthenticationKeyResponse{ObjectID: objectID}, nil
+	return &PutAuthkeyResponse{ObjectID: objectID}, nil
 }
 
 func parsePutOpaqueResponse(payload []byte) (Response, error) {

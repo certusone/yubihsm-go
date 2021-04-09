@@ -23,7 +23,7 @@ const (
 	CommandTypeStorageStatus           CommandType = 0x41
 	CommandTypePutOpaque               CommandType = 0x42
 	CommandTypeGetOpaque               CommandType = 0x43
-	CommandTypePutAuthenticationKey    CommandType = 0x44
+	CommandTypePutAuthKey              CommandType = 0x44
 	CommandTypePutAsymmetric           CommandType = 0x45
 	CommandTypeGenerateAsymmetricKey   CommandType = 0x46
 	CommandTypeSignDataPkcs1           CommandType = 0x47
