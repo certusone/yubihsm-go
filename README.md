@@ -15,6 +15,10 @@ Currently the following commands are implemented:
  * DeriveEcdh
  * Echo
  * ChangeAuthenticationKey
+ * PutAuthenticationKey
+ * GetOpaque
+ * PutOpaque
+ * SignAttestationCertificate
  * Authentication & Session related commands
  * GetPseudoRandom
 

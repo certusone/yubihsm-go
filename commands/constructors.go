@@ -151,6 +151,26 @@ func NewIDOption(id uint16) ListCommandOption {
 	}
 }
 
+func NewDomainOption(domain uint16) ListCommandOption {
+	return func(w io.Writer) {
+		binary.Write(w, binary.BigEndian, ListObjectParamDomains)
+		binary.Write(w, binary.BigEndian, domain)
+	}
+}
+
+func NewLabelOption(label []byte) (ListCommandOption, error) {
+	if len(label) > LabelLength {
+		return nil, errors.New("label is too long")
+	}
+	if len(label) < LabelLength {
+		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
+	}
+	return func(w io.Writer) {
+		binary.Write(w, binary.BigEndian, ListObjectParamLabel)
+		binary.Write(w, binary.BigEndian, label)
+	}, nil
+}
+
 func CreateListObjectsCommand(options ...ListCommandOption) (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeListObjects,
@@ -251,6 +271,43 @@ func CreateChangeAuthenticationKeyCommand(objID uint16, newPassword string) (*Co
 	return command, nil
 }
 
+func CreatePutOpaqueCommand(objID uint16, label []byte, domains uint16, capabilities uint64, algorithm Algorithm, data []byte) (*CommandMessage, error) {
+	if len(label) > LabelLength {
+		return nil, errors.New("label is too long")
+	}
+	if len(label) < LabelLength {
+		label = append(label, bytes.Repeat([]byte{0x00}, LabelLength-len(label))...)
+	}
+
+	command := &CommandMessage{
+		CommandType: CommandTypePutOpaque,
+	}
+
+	payload := bytes.NewBuffer(nil)
+	binary.Write(payload, binary.BigEndian, objID)
+	payload.Write(label)
+	binary.Write(payload, binary.BigEndian, domains)
+	binary.Write(payload, binary.BigEndian, capabilities)
+	binary.Write(payload, binary.BigEndian, algorithm)
+	payload.Write(data)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreateGetOpaqueCommand(objID uint16) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeGetOpaque,
+	}
+
+	payload := bytes.NewBuffer(nil)
+	binary.Write(payload, binary.BigEndian, objID)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreateGetPseudoRandomCommand(numBytes uint16) *CommandMessage {
 	command := &CommandMessage{
 		CommandType: CommandTypeGetPseudoRandom,
@@ -335,6 +392,25 @@ func CreatePutAuthkeyCommand(objID uint16, label []byte, domains uint16, capabil
 	binary.Write(payload, binary.BigEndian, delegated)
 	payload.Write(encKey)
 	payload.Write(macKey)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreatePutDerivedAuthenticationKeyCommand(objID uint16, label []byte, domains uint16, capabilities uint64, delegated uint64, password string) (*CommandMessage, error) {
+	authKey := authkey.NewFromPassword(password)
+	return CreatePutAuthkeyCommand(objID, label, domains, capabilities, delegated, authKey.GetEncKey(), authKey.GetMacKey())
+}
+
+func CreateSignAttestationCertCommand(keyObjID, attestationObjID uint16) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeAttestAsymmetric,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyObjID)
+	binary.Write(payload, binary.BigEndian, attestationObjID)
 
 	command.Data = payload.Bytes()
 

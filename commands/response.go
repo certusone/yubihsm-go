@@ -95,6 +95,18 @@ type (
 	PutAuthkeyResponse struct {
 		ObjectID uint16
 	}
+
+	PutOpaqueResponse struct {
+		ObjectID uint16
+	}
+
+	GetOpaqueResponse struct {
+		Data []byte
+	}
+
+	SignAttestationCertResponse struct {
+		Cert []byte
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -157,6 +169,12 @@ func ParseResponse(data []byte) (Response, error) {
 		return parsePutWrapkeyResponse(payload)
 	case CommandTypePutAuthKey:
 		return parsePutAuthkeyResponse(payload)
+	case CommandTypePutOpaque:
+		return parsePutOpaqueResponse(payload)
+	case CommandTypeGetOpaque:
+		return parseGetOpaqueResponse(payload)
+	case CommandTypeAttestAsymmetric:
+		return parseAttestationCertResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -217,6 +235,10 @@ func parseSignDataEddsaResponse(payload []byte) (Response, error) {
 }
 
 func parseSignDataPkcs1Response(payload []byte) (Response, error) {
+	if len(payload) < 1 {
+		return nil, errors.New("invalid response payload length")
+	}
+
 	return &SignDataPkcs1Response{
 		Signature: payload,
 	}, nil
@@ -335,7 +357,44 @@ func parsePutAuthkeyResponse(payload []byte) (Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &PutAuthkeyResponse{ObjectID: objectID}, nil
+}
+
+func parsePutOpaqueResponse(payload []byte) (Response, error) {
+	if len(payload) != 2 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	var objectID uint16
+	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &objectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &PutOpaqueResponse{
+		ObjectID: objectID,
+	}, nil
+}
+
+func parseGetOpaqueResponse(payload []byte) (Response, error) {
+	if len(payload) < 1 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	return &GetOpaqueResponse{
+		Data: payload,
+	}, nil
+}
+
+func parseAttestationCertResponse(payload []byte) (Response, error) {
+	if len(payload) < 1 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	return &SignAttestationCertResponse{
+		Cert: payload,
+	}, nil
 }
 
 // Error formats a card error message into a human readable format
@@ -366,12 +425,20 @@ func (e *Error) Error() string {
 		message = "Log full"
 	case ErrorCodeObjectNotFound:
 		message = "Object not found"
-	case ErrorCodeIDIllegal:
-		message = "ID illegal"
+	case ErrorCodeInvalidID:
+		message = "Invalid ID"
 	case ErrorCodeCommandUnexecuted:
 		message = "Command unexecuted"
+	case ErrorCodeSSHCAConstraintViolation:
+		message = "SSH CA constraint violation"
+	case ErrorCodeInvalidOTP:
+		message = "Invalid OTP"
+	case ErrorCodeDemoMode:
+		message = "Demo mode"
+	case ErrorCodeObjectExists:
+		message = "Object exists"
 	default:
-		message = "unknown"
+		message = "Unknown"
 	}
 
 	return fmt.Sprintf("card responded with error: %s", message)

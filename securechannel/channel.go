@@ -85,6 +85,8 @@ const (
 	MaxMessagesPerSession = 10000
 )
 
+var ErrAuthCryptogram = errors.New("authentication failed: device sent wrong cryptogram")
+
 // NewSecureChannel initiates a new secure channel to communicate with an HSM using the given authKey
 // Call Authenticate next to establish a session.
 func NewSecureChannel(connector connector.Connector, authKeySlot uint16, password string) (*SecureChannel, error) {
@@ -143,7 +145,7 @@ func (s *SecureChannel) Authenticate() error {
 	}
 
 	if !bytes.Equal(deviceCryptogram, createSessionResp.CardCryptogram) {
-		return errors.New("authentication failed: device sent wrong cryptogram")
+		return ErrAuthCryptogram
 	}
 
 	// Create host cryptogram
