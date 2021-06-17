@@ -112,6 +112,11 @@ type (
 		Nonce []byte
 		Data  []byte
 	}
+
+	ImportWrappedResponse struct {
+		ObjectType uint8
+		ObjectID   uint16
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -182,6 +187,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseAttestationCertResponse(payload)
 	case CommandTypeExportWrapped:
 		return parseExportWrappedResponse(payload)
+	case CommandTypeImportWrapped:
+		return parseImportWrappedResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -412,6 +419,23 @@ func parseExportWrappedResponse(payload []byte) (Response, error) {
 	return &ExportWrappedResponse{
 		Nonce: payload[:13],
 		Data:  payload[13:],
+	}, nil
+}
+
+func parseImportWrappedResponse(payload []byte) (Response, error) {
+	if len(payload) != 3 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	var objID uint16
+	err := binary.Read(bytes.NewReader(payload[1:3]), binary.BigEndian, &objID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ImportWrappedResponse{
+		ObjectType: uint8(payload[0]),
+		ObjectID:   objID,
 	}, nil
 }
 
