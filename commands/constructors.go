@@ -411,7 +411,41 @@ func CreateSignAttestationCertCommand(keyObjID, attestationObjID uint16) (*Comma
 	payload := bytes.NewBuffer([]byte{})
 	binary.Write(payload, binary.BigEndian, keyObjID)
 	binary.Write(payload, binary.BigEndian, attestationObjID)
+	command.Data = payload.Bytes()
 
+	return command, nil
+}
+
+func CreateExportWrappedCommand(wrapObjID uint16, objType uint8, objID uint16) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeExportWrapped,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, wrapObjID)
+	binary.Write(payload, binary.BigEndian, objType)
+	binary.Write(payload, binary.BigEndian, objID)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+// CreateImportWrappedCommand will import a wrapped/encrypted Object that was
+// previously exported by an YubiHSM2 device. The imported object will retain
+// its metadata (Object ID, Domains, Capabilities …etc), however, the object’s
+// origin will be marked as imported instead of generated.
+func CreateImportWrappedCommand(wrapObjID uint16, nonce, data []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeImportWrapped,
+	}
+	if len(nonce) != 13 {
+		return nil, errors.New("invalid nonce length")
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, wrapObjID)
+	payload.Write(nonce)
+	payload.Write(data)
 	command.Data = payload.Bytes()
 
 	return command, nil
