@@ -107,6 +107,11 @@ type (
 	SignAttestationCertResponse struct {
 		Cert []byte
 	}
+
+	ExportWrappedResponse struct {
+		Nonce []byte
+		Data  []byte
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -175,6 +180,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseGetOpaqueResponse(payload)
 	case CommandTypeAttestAsymmetric:
 		return parseAttestationCertResponse(payload)
+	case CommandTypeExportWrapped:
+		return parseExportWrappedResponse(payload)
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -394,6 +401,17 @@ func parseAttestationCertResponse(payload []byte) (Response, error) {
 
 	return &SignAttestationCertResponse{
 		Cert: payload,
+	}, nil
+}
+
+func parseExportWrappedResponse(payload []byte) (Response, error) {
+	if len(payload) < 13 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	return &ExportWrappedResponse{
+		Nonce: payload[:13],
+		Data:  payload[13:],
 	}, nil
 }
 
