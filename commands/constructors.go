@@ -411,7 +411,20 @@ func CreateSignAttestationCertCommand(keyObjID, attestationObjID uint16) (*Comma
 	payload := bytes.NewBuffer([]byte{})
 	binary.Write(payload, binary.BigEndian, keyObjID)
 	binary.Write(payload, binary.BigEndian, attestationObjID)
+	command.Data = payload.Bytes()
 
+	return command, nil
+}
+
+func CreateExportWrappedCommand(wrapObjID uint16, objType uint8, objID uint16) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeExportWrapped,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, wrapObjID)
+	binary.Write(payload, binary.BigEndian, objType)
+	binary.Write(payload, binary.BigEndian, objID)
 	command.Data = payload.Bytes()
 
 	return command, nil
