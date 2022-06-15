@@ -15,6 +15,13 @@ type (
 		Code ErrorCode
 	}
 
+	DeviceInfoResponse struct {
+		MajorVersion  uint8
+		MinorVersion  uint8
+		BuildVersion  uint8
+		SerialNumber  uint32
+	}
+
 	CreateSessionResponse struct {
 		SessionID      uint8
 		CardChallenge  []byte
@@ -141,6 +148,8 @@ func ParseResponse(data []byte) (Response, error) {
 	}
 
 	switch transactionType {
+	case CommandTypeDeviceInfo:
+		return parseDeviceInfoResponse(payload)
 	case CommandTypeCreateSession:
 		return parseCreateSessionResponse(payload)
 	case CommandTypeAuthenticateSession:
@@ -214,6 +223,20 @@ func parseSessionMessage(payload []byte) (Response, error) {
 	}, nil
 }
 
+func parseDeviceInfoResponse(payload []byte) (Response, error) {
+	var serialNumber uint32
+	err := binary.Read(bytes.NewReader(payload[3:7]), binary.BigEndian, &serialNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DeviceInfoResponse{
+		MajorVersion: payload[0],
+		MinorVersion: payload[1],
+		BuildVersion: payload[2],
+		SerialNumber: serialNumber,
+	}, nil
+}
 func parseCreateSessionResponse(payload []byte) (Response, error) {
 	if len(payload) != 17 {
 		return nil, errors.New("invalid response payload length")
