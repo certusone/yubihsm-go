@@ -2,6 +2,7 @@ package connector
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 
 	"github.com/certusone/yubihsm-go/commands"
 )
+
+var ErrInvalidResponseValueLength = errors.New("invalid response value length")
 
 type (
 	// HTTPConnector implements the HTTP based connection with the YubiHSM2 connector
@@ -66,8 +69,12 @@ func (c *HTTPConnector) GetStatus() (*StatusResponse, error) {
 	for _, pair := range pairs {
 		values = append(values, strings.Split(pair, "=")...)
 	}
-
 	status := &StatusResponse{}
+
+	if values == nil || len(values) < 12 {
+		return nil, ErrInvalidResponseValueLength
+	}
+
 	status.Status = Status(values[1])
 	status.Serial = values[3]
 	status.Version = values[5]
