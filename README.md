@@ -6,6 +6,7 @@ messages is depleted.
 
 Currently the following commands are implemented:
 
+ * DeviceInfo
  * Reset
  * GenerateAsymmetricKey
  * SignDataEddsa

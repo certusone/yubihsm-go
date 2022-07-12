@@ -16,10 +16,13 @@ type (
 	}
 
 	DeviceInfoResponse struct {
-		MajorVersion  uint8
-		MinorVersion  uint8
-		BuildVersion  uint8
-		SerialNumber  uint32
+		MajorVersion        uint8
+		MinorVersion        uint8
+		BuildVersion        uint8
+		SerialNumber        uint32
+		LogTotal            uint8
+		LogUsed             uint8
+		SupportedAlgorithms []Algorithm
 	}
 
 	CreateSessionResponse struct {
@@ -235,6 +238,8 @@ func parseDeviceInfoResponse(payload []byte) (Response, error) {
 		MinorVersion: payload[1],
 		BuildVersion: payload[2],
 		SerialNumber: serialNumber,
+		LogTotal: payload[8],
+		LogUsed: payload[9],
 	}, nil
 }
 func parseCreateSessionResponse(payload []byte) (Response, error) {
