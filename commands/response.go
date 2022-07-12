@@ -233,13 +233,19 @@ func parseDeviceInfoResponse(payload []byte) (Response, error) {
 		return nil, err
 	}
 
+	var supportedAlgorithms []Algorithm
+	for _, alg := range payload[9:] {
+		supportedAlgorithms = append(supportedAlgorithms, Algorithm(alg))
+	}
+
 	return &DeviceInfoResponse{
 		MajorVersion: payload[0],
 		MinorVersion: payload[1],
 		BuildVersion: payload[2],
 		SerialNumber: serialNumber,
-		LogTotal: payload[8],
-		LogUsed: payload[9],
+		LogTotal: payload[7],
+		LogUsed: payload[8],
+		SupportedAlgorithms: supportedAlgorithms,
 	}, nil
 }
 func parseCreateSessionResponse(payload []byte) (Response, error) {
