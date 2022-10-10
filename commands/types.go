@@ -86,6 +86,8 @@ const (
 	// Algorithms
 	AlgorithmRSA2048                 Algorithm = 9
 	AlgorithmP256                    Algorithm = 12
+	AlgorithmP384                    Algorithm = 13
+	AlgorithmP521                    Algorithm = 14
 	AlgorithmSecp256k1               Algorithm = 15
 	AlgorithmOpaqueData              Algorithm = 30
 	AlgorithmOpaqueX509Certificate   Algorithm = 31
