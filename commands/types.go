@@ -130,6 +130,7 @@ const (
 	AlgorithmECECDSASHA384           Algorithm = 44
 	AlgorithmECECDSASHA512           Algorithm = 45
 	AlgorithmED25519                 Algorithm = 46
+	AlgorithmECP224                  Algorithm = 47
 
 	// Capabilities
 	CapabilityNone                    uint64 = 0x0000000000000000
