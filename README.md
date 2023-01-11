@@ -6,6 +6,7 @@ messages is depleted.
 
 Currently the following commands are implemented:
 
+ * DeviceInfo
  * Reset
  * GenerateAsymmetricKey
  * SignDataEddsa
@@ -28,7 +29,7 @@ Please submit a PR if you have implemented new commands or extended existing con
 
 ## Example of usage
 
-```
+```go
 c := connector.NewHTTPConnector("localhost:1234")
 sm, err := yubihsm.NewSessionManager(c, 1, "password", 2)
 if err != nil {

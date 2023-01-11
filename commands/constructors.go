@@ -9,6 +9,15 @@ import (
 	"github.com/certusone/yubihsm-go/authkey"
 )
 
+
+func CreateDeviceInfoCommand() (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeDeviceInfo,
+	}
+
+	return command, nil
+}
+
 func CreateCreateSessionCommand(keySetID uint16, hostChallenge []byte) (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeCreateSession,

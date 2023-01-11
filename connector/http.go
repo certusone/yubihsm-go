@@ -28,40 +28,50 @@ func NewHTTPConnector(url string) *HTTPConnector {
 }
 
 // Request encodes and executes a command on the HSM and returns the binary response
-func (c *HTTPConnector) Request(command *commands.CommandMessage) ([]byte, error) {
-	requestData, err := command.Serialize()
+func (c *HTTPConnector) Request(command *commands.CommandMessage) (data []byte, err error) {
+	var requestData []byte
+	requestData, err = command.Serialize()
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	res, err := http.DefaultClient.Post("http://"+c.URL+"/connector/api", "application/octet-stream", bytes.NewReader(requestData))
+	var res *http.Response
+	res, err = http.DefaultClient.Post("http://"+c.URL+"/connector/api", "application/octet-stream", bytes.NewReader(requestData))
 	if err != nil {
-		return nil, err
+		return
 	}
+
+	defer func() {
+		closeErr := res.Body.Close()
+		if err == nil {
+			err = closeErr
+		}
+	}()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("server returned non OK status code %d", res.StatusCode)
+		err = fmt.Errorf("server returned non OK status code %d", res.StatusCode)
+		return
 	}
 
-	data, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
+	data, err = ioutil.ReadAll(res.Body)
 
-	return data, nil
+	return
 }
 
 // GetStatus requests the status of the HSM connector route /connector/status
-func (c *HTTPConnector) GetStatus() (*StatusResponse, error) {
-	res, err := http.DefaultClient.Get("http://" + c.URL + "/connector/status")
+func (c *HTTPConnector) GetStatus() (status *StatusResponse, err error) {
+	var res *http.Response
+	res, err = http.DefaultClient.Get("http://" + c.URL + "/connector/status")
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	data, err := ioutil.ReadAll(res.Body)
+	var data []byte
+	data, err = ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return
 	}
+
 	bodyString := string(data)
 	pairs := strings.Split(bodyString, "\n")
 
@@ -69,12 +79,12 @@ func (c *HTTPConnector) GetStatus() (*StatusResponse, error) {
 	for _, pair := range pairs {
 		values = append(values, strings.Split(pair, "=")...)
 	}
-	status := &StatusResponse{}
 
 	if values == nil || len(values) < 12 {
 		return nil, ErrInvalidResponseValueLength
 	}
 
+	status = &StatusResponse{}
 	status.Status = Status(values[1])
 	status.Serial = values[3]
 	status.Version = values[5]
@@ -82,5 +92,7 @@ func (c *HTTPConnector) GetStatus() (*StatusResponse, error) {
 	status.Address = values[9]
 	status.Port = values[11]
 
-	return status, nil
+	err = res.Body.Close()
+
+	return
 }
