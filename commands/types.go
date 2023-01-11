@@ -84,18 +84,53 @@ const (
 	ErrorCodeCommandUnexecuted        ErrorCode = 0xff
 
 	// Algorithms
+	AlgorithmRSAPKCS1SHA1            Algorithm = 1
+	AlgorithmRSAPKCS1SHA256          Algorithm = 2
+	AlgorithmRSAPKCS1SHA384          Algorithm = 3
+	AlgorithmRSAPKCS1SHA512          Algorithm = 4
+	AlgorithmRSAPSSSHA1              Algorithm = 5
+	AlgorithmRSAPSSSHA256            Algorithm = 6
+	AlgorithmRSAPSSSHA384            Algorithm = 7
+	AlgorithmRSAPSSSHA512            Algorithm = 8
 	AlgorithmRSA2048                 Algorithm = 9
+	AlgorithmRSA3072                 Algorithm = 10
+	AlgorithmRSA4096                 Algorithm = 11
 	AlgorithmP256                    Algorithm = 12
 	AlgorithmP384                    Algorithm = 13
 	AlgorithmP521                    Algorithm = 14
 	AlgorithmSecp256k1               Algorithm = 15
+	AlgorithmECBP256                 Algorithm = 16
+	AlgorithmECBP384                 Algorithm = 17
+	AlgorithmECBP512                 Algorithm = 18
+	AlgorithmHMACSHA1                Algorithm = 19
+	AlgorithmHMACSHA256              Algorithm = 20
+	AlgorithmHMACSHA384              Algorithm = 21
+	AlgorithmHMACSHA512              Algorithm = 22
+	AlgorithmECECDSASHA1             Algorithm = 23
+	AlgorithmECECDH                  Algorithm = 24
+	AlgorithmRSAOAEPSHA1             Algorithm = 25
+	AlgorithmRSAOAEPSHA256           Algorithm = 26
+	AlgorithmRSAOAEPSHA384           Algorithm = 27
+	AlgorithmRSAOAEPSHA512           Algorithm = 28
+	AlgorithmAES128CCMWrap           Algorithm = 29
 	AlgorithmOpaqueData              Algorithm = 30
 	AlgorithmOpaqueX509Certificate   Algorithm = 31
+	AlgorithmRSAMGF1SHA1             Algorithm = 32
+	AlgorithmRSAMGF1SHA256           Algorithm = 33
+	AlgorithmRSAMGF1SHA384           Algorithm = 34
+	AlgorithmRSAMGF1SHA512           Algorithm = 35
+	AlgorithmTEMPLATESSH             Algorithm = 36
+	AlgorithmAES128YUBICOOTP         Algorithm = 37
 	AlgorithmYubicoAESAuthentication Algorithm = 38
-	AlgorithmAES128CCMWrap           Algorithm = 29
+	AlgorithmAES192YUBICOOTP         Algorithm = 39
+	AlgorithmAES256YUBICOOTP         Algorithm = 40
 	AlgorithmAES192CCMWrap           Algorithm = 41
 	AlgorithmAES256CCMWrap           Algorithm = 42
+	AlgorithmECECDSASHA256           Algorithm = 43
+	AlgorithmECECDSASHA384           Algorithm = 44
+	AlgorithmECECDSASHA512           Algorithm = 45
 	AlgorithmED25519                 Algorithm = 46
+	AlgorithmECP224                  Algorithm = 47
 
 	// Capabilities
 	CapabilityNone                    uint64 = 0x0000000000000000
