@@ -127,6 +127,24 @@ type (
 		ObjectType uint8
 		ObjectID   uint16
 	}
+
+	GetLogsResponse struct {
+		UnloggedBootEvents           uint16
+		UnloggedAuthenticationEvents uint16
+		Elements                     []LogElement
+	}
+
+	LogElement struct {
+		CommandNumber  uint16
+		CommandType    CommandType
+		CommandLength  uint16
+		SessionID      uint16
+		KeyID          uint16
+		SecondaryKeyID uint16
+		Result         ErrorCode
+		SysTick        uint32
+		Digest         []byte
+	}
 )
 
 // ParseResponse parses the binary response from the card to the relevant Response type.
@@ -201,6 +219,10 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseExportWrappedResponse(payload)
 	case CommandTypeImportWrapped:
 		return parseImportWrappedResponse(payload)
+	case CommandTypeGetLogs:
+		return parseGetLogsResponse(payload)
+	case CommandTypeSetLogIndex:
+		return nil, nil
 	case ErrorResponseCode:
 		return nil, parseErrorResponse(payload)
 	default:
@@ -471,6 +493,115 @@ func parseImportWrappedResponse(payload []byte) (Response, error) {
 		ObjectType: uint8(payload[0]),
 		ObjectID:   objID,
 	}, nil
+}
+
+const (
+	LogElementDataLength   = 16
+	LogElementDigestLength = 16
+	LogElementLength       = LogElementDataLength + LogElementDigestLength
+)
+
+const (
+	LogCommandTypeBoot  = CommandType(0x00)
+	LogCommandTypeReset = CommandType(0xff)
+)
+
+func parseGetLogsResponse(payload []byte) (Response, error) {
+	if len(payload) < 5 {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	var (
+		unloggedBootEvents           uint16
+		unloggedAuthenticationEvents uint16
+		numberOfElements             uint8
+		elements                     []LogElement
+	)
+
+	r := bytes.NewReader(payload)
+	if err := binary.Read(r, binary.BigEndian, &unloggedBootEvents); err != nil {
+		return nil, err
+	}
+	if err := binary.Read(r, binary.BigEndian, &unloggedAuthenticationEvents); err != nil {
+		return nil, err
+	}
+	if err := binary.Read(r, binary.BigEndian, &numberOfElements); err != nil {
+		return nil, err
+	}
+
+	if len(payload) != 5+int(numberOfElements)*LogElementLength {
+		return nil, errors.New("invalid response payload length")
+	}
+
+	for i := 0; i < int(numberOfElements); i++ {
+		var (
+			commandNumber  uint16
+			commandType    CommandType
+			commandLength  uint16
+			sessionID      uint16
+			keyID          uint16
+			secondaryKeyID uint16
+			result         ErrorCode
+			sysTick        uint32
+			digest         = make([]byte, 16)
+		)
+
+		if err := binary.Read(r, binary.BigEndian, &commandNumber); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(r, binary.BigEndian, &commandType); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(r, binary.BigEndian, &commandLength); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(r, binary.BigEndian, &sessionID); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(r, binary.BigEndian, &keyID); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(r, binary.BigEndian, &secondaryKeyID); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(r, binary.BigEndian, &result); err != nil {
+			return nil, err
+		}
+		if err := binary.Read(r, binary.BigEndian, &sysTick); err != nil {
+			return nil, err
+		}
+		if n, err := r.Read(digest); err != nil {
+			return nil, err
+		} else if n != 16 {
+			return nil, errors.New("incomplete log entry digest")
+		}
+
+		elements = append(elements, LogElement{
+			CommandNumber:  commandNumber,
+			CommandType:    commandType,
+			CommandLength:  commandLength,
+			SessionID:      sessionID,
+			KeyID:          keyID,
+			SecondaryKeyID: secondaryKeyID,
+			Result:         result,
+			SysTick:        sysTick,
+			Digest:         digest,
+		})
+	}
+
+	return &GetLogsResponse{
+		UnloggedBootEvents:           unloggedBootEvents,
+		UnloggedAuthenticationEvents: unloggedAuthenticationEvents,
+		Elements:                     elements,
+	}, nil
+}
+
+func (le LogElement) IsBoot() bool {
+	return le.CommandType == LogCommandTypeBoot
+}
+
+func (le LogElement) IsReset() bool {
+	return le.CommandType == LogCommandTypeReset
 }
 
 // Error formats a card error message into a human readable format
