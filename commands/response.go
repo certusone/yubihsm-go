@@ -266,7 +266,7 @@ func parseCreateAsymmetricKeyResponse(payload []byte) (Response, error) {
 	}
 
 	var keyID uint16
-	err := binary.Read(bytes.NewReader(payload[1:3]), binary.BigEndian, &keyID)
+	err := binary.Read(bytes.NewReader(payload), binary.BigEndian, &keyID)
 	if err != nil {
 		return nil, err
 	}
