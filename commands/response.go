@@ -179,6 +179,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseGetPubKeyResponse(payload)
 	case CommandTypeDeleteObject:
 		return nil, nil
+	case CommandTypeReset:
+		return nil, nil
 	case CommandTypeEcho:
 		return parseEchoResponse(payload)
 	case CommandTypeDeriveEcdh:
