@@ -264,6 +264,24 @@ func CreateDeriveEcdhCommand(objID uint16, pubkey []byte) (*CommandMessage, erro
 	return command, nil
 }
 
+func CreateDecryptOaepCommand(objID uint16, algorithm Algorithm, ciphertextFile []byte) (*CommandMessage, error) {
+	if algorithm < AlgorithmRSAOAEPSHA1 || algorithm > AlgorithmRSAOAEPSHA512 {
+        return nil, errors.New("invalid algorithm")
+    }
+
+	command := &CommandMessage{
+		CommandType: CommandTypeDecryptOaep,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, objID)
+	binary.Write(payload, binary.BigEndian, algorithm)
+	payload.Write(ciphertextFile)
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreateChangeAuthenticationKeyCommand(objID uint16, newPassword string) (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeChangeAuthenticationKey,

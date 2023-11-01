@@ -94,6 +94,10 @@ type (
 		XCoordinate []byte
 	}
 
+    DecryptOaepResponse struct {
+		Plaintext []byte
+	}
+
 	ChangeAuthenticationKeyResponse struct {
 		ObjectID uint16
 	}
@@ -183,6 +187,8 @@ func ParseResponse(data []byte) (Response, error) {
 		return parseEchoResponse(payload)
 	case CommandTypeDeriveEcdh:
 		return parseDeriveEcdhResponse(payload)
+    case CommandTypeDecryptOaep:
+		return parseDecryptOaepResponse(payload)
 	case CommandTypeChangeAuthenticationKey:
 		return parseChangeAuthenticationKeyResponse(payload)
 	case CommandTypeGetPseudoRandom:
@@ -361,6 +367,12 @@ func parseEchoResponse(payload []byte) (Response, error) {
 func parseDeriveEcdhResponse(payload []byte) (Response, error) {
 	return &DeriveEcdhResponse{
 		XCoordinate: payload,
+	}, nil
+}
+
+func parseDecryptOaepResponse(payload []byte) (Response, error) {
+	return &DecryptOaepResponse{
+		Plaintext: payload,
 	}, nil
 }
 
