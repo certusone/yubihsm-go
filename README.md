@@ -22,6 +22,8 @@ Currently the following commands are implemented:
  * SignAttestationCertificate
  * Authentication & Session related commands
  * GetPseudoRandom
+ * GetLogs
+ * SetLogIndex
 
 Implementing new commands is really easy. Please consult `commands/constructors.go` and `commands/response.go` for reference.
 

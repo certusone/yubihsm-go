@@ -182,6 +182,13 @@ const (
 	CapabilityDeleteTemplate          uint64 = 0x0000100000000000
 	CapabilityDeleteOtpAeadKey        uint64 = 0x0000200000000000
 	CapabilityChangeAuthenticationKey uint64 = 0x0000400000000000
+	CapabilityPutSymmetricKey         uint64 = 0x0000800000000000
+	CapabilityGenerateSymmetricKey    uint64 = 0x0001000000000000
+	CapabilityDeleteSymmetricKey      uint64 = 0x0002000000000000
+	CapabilityDecryptEcb              uint64 = 0x0004000000000000
+	CapabilityEncryptEcb              uint64 = 0x0008000000000000
+	CapabilityDecryptCbc              uint64 = 0x0010000000000000
+	CapabilityEncryptCbc              uint64 = 0x0020000000000000
 
 	// Domains
 	Domain1  uint16 = 0x0001
@@ -209,6 +216,7 @@ const (
 	ObjectTypeHmacKey           uint8 = 0x05
 	ObjectTypeTemplate          uint8 = 0x06
 	ObjectTypeOtpAeadKey        uint8 = 0x07
+	ObjectTypeSymmetricKey      uint8 = 0x08
 
 	// list objects params
 	ListObjectParamID           uint8 = 0x01
@@ -219,11 +227,21 @@ const (
 	ListObjectParamLabel        uint8 = 0x06
 )
 
-// CapabilityPrimitiveFromSlice OR's all the capabilitites together.
+// CapabilityPrimitiveFromSlice OR's all the capabilities together.
 func CapabilityPrimitiveFromSlice(capabilitites []uint64) uint64 {
 	var primitive uint64
 	for _, c := range capabilitites {
 		primitive |= c
 	}
 	return primitive
+}
+
+func SliceForCapabilityPrimitive(primitive uint64) (capabilities []uint64) {
+	for i := 0; i < 64; i++ {
+		c := uint64(1) << i
+		if c&primitive > 0 {
+			capabilities = append(capabilities, c)
+		}
+	}
+	return
 }

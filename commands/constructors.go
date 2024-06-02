@@ -9,7 +9,6 @@ import (
 	"github.com/certusone/yubihsm-go/authkey"
 )
 
-
 func CreateDeviceInfoCommand() (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeDeviceInfo,
@@ -106,6 +105,20 @@ func CreateSignDataEcdsaCommand(keyID uint16, data []byte) (*CommandMessage, err
 func CreateSignDataPkcs1Command(keyID uint16, data []byte) (*CommandMessage, error) {
 	command := &CommandMessage{
 		CommandType: CommandTypeSignDataPkcs1,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	payload.Write(data)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
+func CreateHMACDataCommand(keyID uint16, data []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeHMACData,
 	}
 
 	payload := bytes.NewBuffer([]byte{})
@@ -458,4 +471,24 @@ func CreateImportWrappedCommand(wrapObjID uint16, nonce, data []byte) (*CommandM
 	command.Data = payload.Bytes()
 
 	return command, nil
+}
+
+func CreateGetLogsCommand() *CommandMessage {
+	command := &CommandMessage{
+		CommandType: CommandTypeGetLogs,
+	}
+
+	return command
+}
+
+func CreateSetLogIndexCommand(index uint16) *CommandMessage {
+	command := &CommandMessage{
+		CommandType: CommandTypeSetLogIndex,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	_ = binary.Write(payload, binary.BigEndian, index)
+	command.Data = payload.Bytes()
+
+	return command
 }
