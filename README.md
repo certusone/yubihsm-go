@@ -11,6 +11,7 @@ Currently the following commands are implemented:
  * GenerateAsymmetricKey
  * SignDataEddsa
  * SignDataPkcs1
+ * SignDataPss
  * PutAsymmetricKey
  * GetPubKey
  * DeriveEcdh

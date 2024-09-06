@@ -117,6 +117,28 @@ func CreateSignDataPkcs1Command(keyID uint16, data []byte) (*CommandMessage, err
 	return command, nil
 }
 
+
+// CreateSignDataPSSCommand creates the SignDataPSSCommand message.
+// The payload is as follows:
+// keyID | mfg1HashAlg | saltLength | digestedData
+// Protocol details can be found here:
+// https://docs.yubico.com/hardware/yubihsm-2/hsm-2-user-guide/hsm2-cmd-reference.html#id478
+func CreateSignDataPSSCommand(keyID uint16, mfg1HashAlg Algorithm, saltLength uint16, digestedData []byte) (*CommandMessage, error) {
+	command := &CommandMessage{
+		CommandType: CommandTypeSignDataPss,
+	}
+
+	payload := bytes.NewBuffer([]byte{})
+	binary.Write(payload, binary.BigEndian, keyID)
+	binary.Write(payload, binary.BigEndian, mfg1HashAlg)
+	binary.Write(payload, binary.BigEndian, saltLength)
+	payload.Write(digestedData)
+
+	command.Data = payload.Bytes()
+
+	return command, nil
+}
+
 func CreatePutAsymmetricKeyCommand(keyID uint16, label []byte, domains uint16, capabilities uint64, algorithm Algorithm, keyPart1 []byte, keyPart2 []byte) (*CommandMessage, error) {
 	if len(label) > LabelLength {
 		return nil, errors.New("label is too long")
