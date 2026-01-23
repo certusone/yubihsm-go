@@ -5,6 +5,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/binary"
 	"errors"
 	"sync"
@@ -144,7 +145,7 @@ func (s *SecureChannel) Authenticate() error {
 		return err
 	}
 
-	if !bytes.Equal(deviceCryptogram, createSessionResp.CardCryptogram) {
+	if subtle.ConstantTimeCompare(deviceCryptogram, createSessionResp.CardCryptogram) != 1 {
 		return ErrAuthCryptogram
 	}
 
@@ -242,7 +243,7 @@ func (s *SecureChannel) SendEncryptedCommand(c *commands.CommandMessage) (comman
 		Data:        sessionMessage.EncryptedData,
 	}, MessageTypeResponse)
 
-	if !bytes.Equal(expectedMac[:MACLength], sessionMessage.MAC) {
+	if subtle.ConstantTimeCompare(expectedMac[:MACLength], sessionMessage.MAC) != 1 {
 		return nil, errors.New("invalid response MAC")
 	}
 
